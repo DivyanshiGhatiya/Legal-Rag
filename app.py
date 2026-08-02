@@ -172,7 +172,7 @@ if uploaded_files:
                         persist_dir=os.path.join("data", "chroma"),
                     )
                     if already_embedded:
-                        st.info("ℹ️ This document was already embedded; reusing the existing ChromaDB vectors.")
+                        st.info("ℹ️ Embedding already exists for this document. Skipping re-embedding and reusing the stored vectors.")
                     else:
                         embedded_records = embed_chunks(
                             chunks,
