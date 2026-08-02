@@ -4,7 +4,21 @@
 # Environment variables
 .env
 
-# Python cache
+# Python cache and test artifacts
 __pycache__/
-data/chroma/
 *.pyc
+.pytest_cache/
+.mypy_cache/
+
+# Editor / OS files
+.vscode/
+.idea/
+.DS_Store
+
+# Local generated data
+/data/chroma/
+/data/uploads/
+/data/chroma_manifest.json
+/chunked_data/
+/processed_data/
+*.log

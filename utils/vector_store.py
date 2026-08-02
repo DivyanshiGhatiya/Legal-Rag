@@ -175,44 +175,6 @@ def embed_chunks(
     return entry["records"]
 
 
-def embed_query(
-    query: str,
-    collection_name: str = DEFAULT_COLLECTION_NAME,
-    persist_dir: str = DEFAULT_PERSIST_DIR,
-    top_k: int = 5,
-) -> List[Dict[str, Any]]:
-    """Embed a query and retrieve the top-k most similar chunks from the local collection."""
-    if not query or not query.strip():
-        return []
-
-    try:
-        client = _get_ollama_client()
-        response = client.embed(model=EMBED_MODEL, input=[f"search_query: {query.strip()}" ])
-    except Exception as exc:
-        raise LocalVectorStoreError(f"Unable to contact Ollama at the local API: {exc}") from exc
-
-    if isinstance(response, dict):
-        embeddings = response.get("embeddings")
-    else:
-        embeddings = getattr(response, "embeddings", None)
-
-    if not embeddings:
-        raise LocalVectorStoreError("Ollama returned no embeddings for the query.")
-
-    client = chromadb.PersistentClient(path=persist_dir, settings=Settings(allow_reset=True))
-    collection = client.get_or_create_collection(name=collection_name)
-
-    results = collection.query(query_embeddings=[list(map(float, embeddings[0]))], n_results=top_k)
-    matches = []
-    for doc_id, doc_text, distance in zip(
-        results.get("ids", [[]])[0],
-        results.get("documents", [[]])[0],
-        results.get("distances", [[]])[0],
-    ):
-        matches.append({"chunk_id": doc_id, "text": doc_text, "distance": distance})
-    return matches
-
-
 def save_index_manifest(records: Sequence[Dict[str, Any]], output_path: str = "data/chroma_manifest.json") -> str:
     """Persist a small manifest describing the embedded chunks."""
     os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)

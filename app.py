@@ -1,16 +1,15 @@
 # app.py
 """
-Week 1 + Week 2 + Week 3 Legal RAG prototype:
+Legal RAG prototype focused on embedding and vector storage:
 - Sidebar with title/description.
-- PDF upload (multiple) → validation → extraction → cleaning → saving (Week 2).
-- Hierarchical chunking of the cleaned text → preview + metadata → saved JSON (Week 3).
-- Chat interface powered by Grok LLM (unchanged from Week 1).
+- PDF upload (multiple) → validation → extraction → cleaning → saving.
+- Hierarchical chunking of the cleaned text → preview + metadata → saved JSON.
+- Local embedding with Ollama and storage in ChromaDB.
 """
 
 import os
 import streamlit as st
 from utils.chunker import create_chunks_hierarchical, save_chunked
-from utils.grok_client import get_grok_response
 from utils.pdf_processor import (
     validate_pdf,
     extract_text_and_metadata,
@@ -21,7 +20,6 @@ from utils.vector_store import (
     compute_file_hash,
     document_already_embedded,
     embed_chunks,
-    embed_query,
     save_index_manifest,
 )
 
@@ -40,8 +38,7 @@ st.set_page_config(
 with st.sidebar:
     st.title("⚖️ Legal RAG")
     st.caption(
-        "Week 3 prototype: PDF upload → ingestion → hierarchical chunking → preview.\n"
-        "Week 1 chat with Grok LLM remains at the bottom."
+        "Prototype: PDF upload → ingestion → hierarchical chunking → embedding → ChromaDB storage."
     )
     st.info(
         "Uploaded PDFs are saved to `data/uploads/` (raw). "
@@ -199,70 +196,19 @@ if uploaded_files:
                     st.warning(f"⚠️ Embedding could not be completed: {exc}")
 
 # ----------------------------------------------------------------------
-# Chat interface (unchanged from Week 1)
+# Embedding + vector-store status
 # ----------------------------------------------------------------------
+st.header("🗂️ Embedding + Vector Store")
+st.info("This version focuses on PDF ingestion, chunking, embedding, and storing vectors in ChromaDB.")
+
 st.header("💬 Ask a Legal Question")
-
-# Initialize chat history in session state if not present
-if "messages" not in st.session_state:
-    st.session_state.messages = []  # each entry: {"role": "user"/"assistant", "content": str}
-
-# Display prior messages
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
-
-# Chat input box at the bottom
-if prompt := st.chat_input("Type your legal question…"):
-    # 1️⃣ Add user message to history & display
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
-
-    # 2️⃣ Get assistant response from Grok
-    with st.chat_message("assistant"):
-        with st.spinner("Thinking with Grok…"):
-            retrieved_chunks = []
-            try:
-                retrieved_chunks = embed_query(
-                    prompt,
-                    collection_name="legal_rag_chunks",
-                    persist_dir=os.path.join("data", "chroma"),
-                    top_k=3,
-                )
-            except Exception as exc:
-                retrieved_chunks = []
-
-            context_block = ""
-            if retrieved_chunks:
-                context_lines = []
-                for idx, chunk in enumerate(retrieved_chunks, start=1):
-                    context_lines.append(f"Chunk {idx}: {chunk['text']}")
-                context_block = "\n\n".join(context_lines)
-
-            # Optional system hint to steer the model
-            legal_prompt = (
-                "You are a helpful legal assistant. Answer concisely and cite "
-                "general legal principles unless the user provides specific documents.\n\n"
-                f"User question: {prompt}"
-            )
-            if context_block:
-                legal_prompt = (
-                    legal_prompt
-                    + "\n\nRelevant local document chunks:\n"
-                    + context_block
-                )
-            answer = get_grok_response(legal_prompt)
-            st.markdown(answer)
-
-    # 3️⃣ Append assistant message to history
-    st.session_state.messages.append({"role": "assistant", "content": answer})
-
-# ----------------------------------------------------------------------
-# Footer (optional)
-# ----------------------------------------------------------------------
-st.divider()
-st.caption(
-    "Built with Streamlit + Grok API. "
-    "Week 3 adds hierarchy‑aware chunking; Week 4 will add embeddings & vector search."
+prompt = st.text_area(
+    "Type your legal question",
+    placeholder="Example: What are the key terms of this contract?",
+    height=120,
 )
+if st.button("Submit"):
+    if prompt and prompt.strip():
+        st.info("This version currently focuses on document processing and vector storage.")
+    else:
+        st.warning("Please enter a question first.")
