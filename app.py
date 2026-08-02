@@ -1,8 +1,9 @@
 # app.py
 """
-Week 1 + Week 2 Legal RAG prototype:
+Week 1 + Week 2 + Week 3 Legal RAG prototype:
 - Sidebar with title/description.
-- PDF upload (multiple) → validation → extraction → cleaning → preview → save.
+- PDF upload (multiple) → validation → extraction → cleaning → saving (Week 2).
+- Hierarchical chunking of the cleaned text → preview + metadata → saved JSON (Week 3).
 - Chat interface powered by Grok LLM (unchanged from Week 1).
 """
 
@@ -15,12 +16,15 @@ from utils.pdf_processor import (
     clean_text,
     save_processed,
 )
+# ----- NEW: hierarchy‑aware chunking utilities -----
+from utils.chunker import create_chunks_hierarchical, save_chunked
+# ----------------------------------------------------
 
 # ----------------------------------------------------------------------
 # Page configuration
 # ----------------------------------------------------------------------
 st.set_page_config(
-    page_title="Legal RAG – Week 2",
+    page_title="Legal RAG – Week 3",
     page_icon="⚖️",
     layout="centered",
 )
@@ -31,12 +35,13 @@ st.set_page_config(
 with st.sidebar:
     st.title("⚖️ Legal RAG")
     st.caption(
-        "Week 2 prototype: PDF upload → ingestion → preview.\n"
+        "Week 3 prototype: PDF upload → ingestion → hierarchical chunking → preview.\n"
         "Week 1 chat with Grok LLM remains at the bottom."
     )
     st.info(
         "Uploaded PDFs are saved to `data/uploads/` (raw). "
-        "Processed JSONs go to `processed_data/`."
+        "Processed JSONs go to `processed_data/`. "
+        "Chunked JSONs go to `chunked_data/`."
     )
 
 # ----------------------------------------------------------------------
@@ -44,8 +49,10 @@ with st.sidebar:
 # ----------------------------------------------------------------------
 UPLOAD_DIR = os.path.join("data", "uploads")
 PROCESSED_DIR = os.path.join("processed_data")
+CHUNKED_DIR = os.path.join("chunked_data")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(PROCESSED_DIR, exist_ok=True)
+os.makedirs(CHUNKED_DIR, exist_ok=True)
 
 # ----------------------------------------------------------------------
 # Main area: PDF uploader & processing
@@ -56,7 +63,7 @@ uploaded_files = st.file_uploader(
     label="Drop one or more PDF files here",
     type=["pdf"],
     accept_multiple_files=True,
-    help="Each PDF will be validated, text extracted, cleaned, and saved as JSON.",
+    help="Each PDF will be validated, text extracted, cleaned, saved as JSON, then hierarchically chunked.",
 )
 
 if uploaded_files:
@@ -84,42 +91,74 @@ if uploaded_files:
                 st.error(f"❌ Text extraction failed: {exc}")
                 continue
 
-            # Augment metadata with original filename (used for saving)
+            # Augment metadata with original filename (used for saving & chunking)
             extraction["file_name"] = uploaded_file.name
 
             # ---------- Cleaning ----------
             cleaned_text = clean_text(extraction["text"])
 
-            # ---------- Preview ----------
-            st.subheader("📑 Metadata")
-            st.json(
-                {
-                    "File name": extraction["file_name"],
-                    "Number of pages": extraction["num_pages"],
-                    "File size (bytes)": extraction["file_size"],
-                }
-            )
-
-            st.subheader("📝 Cleaned Text Preview")
-            # Show first 2000 characters with a scrollable area; full text is saved.
-            preview = cleaned_text if len(cleaned_text) <= 2000 else cleaned_text[:2000] + "..."
-            st.text_area(
-                label="Preview (first 2000 chars)",
-                value=preview,
-                height=200,
-                disabled=True,
-            )
-
-            # ---------- Save ----------
+            # ---------- Save processed JSON (Week 2 output) ----------
             try:
-                saved_path = save_processed(
+                saved_processed_path = save_processed(
                     metadata=extraction,
                     cleaned_text=cleaned_text,
                     output_dir=PROCESSED_DIR,
                 )
-                st.success(f"✅ Processed JSON saved to: `{saved_path}`")
+                st.success(f"✅ Processed JSON saved to: `{saved_processed_path}`")
             except Exception as exc:
                 st.error(f"❌ Failed to save processed output: {exc}")
+                continue  # Skip chunking if we couldn't save the base file
+
+            # ---------- Hierarchical Chunking (Week 3) ----------
+            try:
+                chunks = create_chunks_hierarchical(
+                    doc_meta=extraction,
+                    cleaned_text=cleaned_text,
+                    chunk_size=1000,   # feel free to tune
+                    overlap=200,
+                )
+            except Exception as exc:
+                st.error(f"❌ Chunking failed: {exc}")
+                continue
+
+            # Show chunking results
+            st.subheader(f"🔢 Chunks Created: {len(chunks)}")
+            if chunks:
+                # Preview of the first chunk
+                first_preview = chunks[0]["text"]
+                if len(first_preview) > 500:
+                    first_preview = first_preview[:500] + "..."
+                st.text_area(
+                    label="Preview of first chunk (first 500 chars)",
+                    value=first_preview,
+                    height=150,
+                    disabled=True,
+                )
+
+                # ----- UPDATED METADATA DISPLAY -----
+                with st.expander("Show chunk metadata (first 5)"):
+                    meta_rows = []
+                    for i, c in enumerate(chunks[:5], start=1):
+                        hierarchy_path = " > ".join(
+                            c.get("metadata", {}).get("hierarchy", [])
+                        ) or "(no headings detected)"
+                        meta_rows.append(
+                            {
+                                "Chunk ID": c["chunk_id"],
+                                "Chunk #": i,
+                                "Length (chars)": c["chunk_length"],
+                                "Hierarchy": hierarchy_path,
+                            }
+                        )
+                    st.dataframe(meta_rows)
+                # ------------------------------------
+
+                # Save chunked JSON
+                try:
+                    saved_chunk_path = save_chunked(chunks, output_dir=CHUNKED_DIR)
+                    st.success(f"✅ Chunked JSON saved to: `{saved_chunk_path}`")
+                except Exception as exc:
+                    st.error(f"❌ Failed to save chunked output: {exc}")
 
 # ----------------------------------------------------------------------
 # Chat interface (unchanged from Week 1)
@@ -163,5 +202,5 @@ if prompt := st.chat_input("Type your legal question…"):
 st.divider()
 st.caption(
     "Built with Streamlit + Grok API. "
-    "Week 2 adds PDF ingestion; Week 3 will add chunking & embeddings."
+    "Week 3 adds hierarchy‑aware chunking; Week 4 will add embeddings & vector search."
 )
