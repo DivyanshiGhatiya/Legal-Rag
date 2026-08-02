@@ -9,6 +9,7 @@ Week 1 + Week 2 + Week 3 Legal RAG prototype:
 
 import os
 import streamlit as st
+from utils.chunker import create_chunks_hierarchical, save_chunked
 from utils.grok_client import get_grok_response
 from utils.pdf_processor import (
     validate_pdf,
@@ -16,9 +17,13 @@ from utils.pdf_processor import (
     clean_text,
     save_processed,
 )
-# ----- NEW: hierarchy‑aware chunking utilities -----
-from utils.chunker import create_chunks_hierarchical, save_chunked
-# ----------------------------------------------------
+from utils.vector_store import (
+    compute_file_hash,
+    document_already_embedded,
+    embed_chunks,
+    embed_query,
+    save_index_manifest,
+)
 
 # ----------------------------------------------------------------------
 # Page configuration
@@ -71,6 +76,7 @@ if uploaded_files:
         with st.expander(f"📄 {uploaded_file.name}", expanded=True):
             # Read the file bytes once
             file_bytes = uploaded_file.getvalue()
+            document_hash = compute_file_hash(file_bytes)
 
             # ---------- Validation ----------
             is_valid, err_msg = validate_pdf(file_bytes)
@@ -160,6 +166,38 @@ if uploaded_files:
                 except Exception as exc:
                     st.error(f"❌ Failed to save chunked output: {exc}")
 
+                # Embed chunks locally with Ollama + ChromaDB
+                try:
+                    already_embedded = document_already_embedded(
+                        uploaded_file.name,
+                        document_hash,
+                        collection_name="legal_rag_chunks",
+                        persist_dir=os.path.join("data", "chroma"),
+                    )
+                    if already_embedded:
+                        st.info("ℹ️ This document was already embedded; reusing the existing ChromaDB vectors.")
+                    else:
+                        embedded_records = embed_chunks(
+                            chunks,
+                            collection_name="legal_rag_chunks",
+                            persist_dir=os.path.join("data", "chroma"),
+                            document_name=uploaded_file.name,
+                            document_hash=document_hash,
+                        )
+                        if embedded_records:
+                            manifest_path = save_index_manifest(
+                                embedded_records,
+                                output_path=os.path.join("data", "chroma_manifest.json"),
+                            )
+                            st.success(
+                                f"✅ Embedding complete: {len(embedded_records)} chunks stored locally in ChromaDB."
+                            )
+                            st.caption(f"Manifest saved to: `{manifest_path}`")
+                        else:
+                            st.info("ℹ️ No chunks were embedded.")
+                except Exception as exc:
+                    st.warning(f"⚠️ Embedding could not be completed: {exc}")
+
 # ----------------------------------------------------------------------
 # Chat interface (unchanged from Week 1)
 # ----------------------------------------------------------------------
@@ -184,12 +222,36 @@ if prompt := st.chat_input("Type your legal question…"):
     # 2️⃣ Get assistant response from Grok
     with st.chat_message("assistant"):
         with st.spinner("Thinking with Grok…"):
+            retrieved_chunks = []
+            try:
+                retrieved_chunks = embed_query(
+                    prompt,
+                    collection_name="legal_rag_chunks",
+                    persist_dir=os.path.join("data", "chroma"),
+                    top_k=3,
+                )
+            except Exception as exc:
+                retrieved_chunks = []
+
+            context_block = ""
+            if retrieved_chunks:
+                context_lines = []
+                for idx, chunk in enumerate(retrieved_chunks, start=1):
+                    context_lines.append(f"Chunk {idx}: {chunk['text']}")
+                context_block = "\n\n".join(context_lines)
+
             # Optional system hint to steer the model
             legal_prompt = (
                 "You are a helpful legal assistant. Answer concisely and cite "
                 "general legal principles unless the user provides specific documents.\n\n"
                 f"User question: {prompt}"
             )
+            if context_block:
+                legal_prompt = (
+                    legal_prompt
+                    + "\n\nRelevant local document chunks:\n"
+                    + context_block
+                )
             answer = get_grok_response(legal_prompt)
             st.markdown(answer)
 
