@@ -1,10 +1,11 @@
 # app.py
 """
-Legal RAG prototype focused on embedding and vector storage:
+Legal RAG prototype:
 - Sidebar with title/description.
 - PDF upload (multiple) → validation → extraction → cleaning → saving.
 - Hierarchical chunking of the cleaned text → preview + metadata → saved JSON.
 - Local embedding with Ollama and storage in ChromaDB.
+- Hybrid retrieval (dense + BM25 + RRF fusion + cross-encoder rerank) demo.
 """
 
 import os
@@ -16,18 +17,23 @@ from utils.pdf_processor import (
     clean_text,
     save_processed,
 )
-from utils.vector_store import (
+from utils.embedding import (
     compute_file_hash,
     document_already_embedded,
     embed_chunks,
     save_index_manifest,
+    get_collection,
+    DEFAULT_COLLECTION_NAME,
+    DEFAULT_PERSIST_DIR,
 )
+from utils.retrieval import retrieve, refresh_corpus_cache
+from utils.generation import generate_answer
 
 # ----------------------------------------------------------------------
 # Page configuration
 # ----------------------------------------------------------------------
 st.set_page_config(
-    page_title="Legal RAG – Week 3",
+    page_title="Legal RAG – Week 3",
     page_icon="⚖️",
     layout="centered",
 )
@@ -38,7 +44,8 @@ st.set_page_config(
 with st.sidebar:
     st.title("⚖️ Legal RAG")
     st.caption(
-        "Prototype: PDF upload → ingestion → hierarchical chunking → embedding → ChromaDB storage."
+        "Prototype: PDF upload → ingestion → hierarchical chunking → embedding → "
+        "ChromaDB storage → hybrid retrieval (dense + BM25 + rerank)."
     )
     st.info(
         "Uploaded PDFs are saved to `data/uploads/` (raw). "
@@ -55,6 +62,9 @@ CHUNKED_DIR = os.path.join("chunked_data")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(PROCESSED_DIR, exist_ok=True)
 os.makedirs(CHUNKED_DIR, exist_ok=True)
+
+COLLECTION = DEFAULT_COLLECTION_NAME
+PERSIST_DIR = DEFAULT_PERSIST_DIR
 
 # ----------------------------------------------------------------------
 # Main area: PDF uploader & processing
@@ -100,7 +110,7 @@ if uploaded_files:
             # ---------- Cleaning ----------
             cleaned_text = clean_text(extraction["text"])
 
-            # ---------- Save processed JSON (Week 2 output) ----------
+            # ---------- Save processed JSON ----------
             try:
                 saved_processed_path = save_processed(
                     metadata=extraction,
@@ -112,7 +122,7 @@ if uploaded_files:
                 st.error(f"❌ Failed to save processed output: {exc}")
                 continue  # Skip chunking if we couldn't save the base file
 
-            # ---------- Hierarchical Chunking (Week 3) ----------
+            # ---------- Hierarchical Chunking ----------
             try:
                 chunks = create_chunks_hierarchical(
                     doc_meta=extraction,
@@ -138,7 +148,6 @@ if uploaded_files:
                     disabled=True,
                 )
 
-                # ----- UPDATED METADATA DISPLAY -----
                 with st.expander("Show chunk metadata (first 5)"):
                     meta_rows = []
                     for i, c in enumerate(chunks[:5], start=1):
@@ -154,7 +163,6 @@ if uploaded_files:
                             }
                         )
                     st.dataframe(meta_rows)
-                # ------------------------------------
 
                 # Save chunked JSON
                 try:
@@ -168,16 +176,19 @@ if uploaded_files:
                     already_embedded = document_already_embedded(
                         uploaded_file.name,
                         document_hash,
-                        collection_name="legal_rag_chunks",
-                        persist_dir=os.path.join("data", "chroma"),
+                        collection_name=COLLECTION,
+                        persist_dir=PERSIST_DIR,
                     )
                     if already_embedded:
-                        st.info("ℹ️ Embedding already exists for this document. Skipping re-embedding and reusing the stored vectors.")
+                        st.info(
+                            "ℹ️ Embedding already exists for this document. "
+                            "Skipping re-embedding and reusing the stored vectors."
+                        )
                     else:
                         embedded_records = embed_chunks(
                             chunks,
-                            collection_name="legal_rag_chunks",
-                            persist_dir=os.path.join("data", "chroma"),
+                            collection_name=COLLECTION,
+                            persist_dir=PERSIST_DIR,
                             document_name=uploaded_file.name,
                             document_hash=document_hash,
                         )
@@ -190,6 +201,8 @@ if uploaded_files:
                                 f"✅ Embedding complete: {len(embedded_records)} chunks stored locally in ChromaDB."
                             )
                             st.caption(f"Manifest saved to: `{manifest_path}`")
+                            # New chunks were added — refresh the in-memory BM25 index
+                            refresh_corpus_cache(collection_name=COLLECTION, persist_dir=PERSIST_DIR)
                         else:
                             st.info("ℹ️ No chunks were embedded.")
                 except Exception as exc:
@@ -199,16 +212,110 @@ if uploaded_files:
 # Embedding + vector-store status
 # ----------------------------------------------------------------------
 st.header("🗂️ Embedding + Vector Store")
-st.info("This version focuses on PDF ingestion, chunking, embedding, and storing vectors in ChromaDB.")
+st.info(
+    "Documents are chunked hierarchically, embedded locally with Ollama "
+    "(`nomic-embed-text`), and stored in ChromaDB."
+)
 
+# ----------------------------------------------------------------------
+# 💬 Ask a Legal Question (Hybrid Retrieval Demo)
+# ----------------------------------------------------------------------
 st.header("💬 Ask a Legal Question")
+
+# Try to list already-indexed documents for the dropdown
+available_docs = []
+try:
+    if os.path.isdir(PERSIST_DIR):
+        coll = get_collection(collection_name=COLLECTION, persist_dir=PERSIST_DIR)
+        all_meta = coll.get(include=["metadatas"])
+        available_docs = sorted({
+            m.get("source_name")
+            for m in (all_meta.get("metadatas") or [])
+            if m and m.get("source_name")
+        })
+except Exception:
+    available_docs = []
+
+doc_choice = st.selectbox(
+    "Restrict search to a specific document (optional):",
+    options=["(All documents)"] + available_docs,
+    index=0,
+)
+doc_filter = None if doc_choice == "(All documents)" else doc_choice
+
+section_filter_input = st.text_input(
+    "Restrict search to a section/heading containing (optional):",
+    placeholder="e.g. Confidentiality",
+)
+section_filter = section_filter_input.strip() or None
+
+col1, col2 = st.columns(2)
+with col1:
+    top_n_final = st.slider("Final number of chunks to return:", 1, 10, 5)
+with col2:
+    use_reranker = st.checkbox("Use cross-encoder reranking", value=True)
+
 prompt = st.text_area(
     "Type your legal question",
-    placeholder="Example: What are the key terms of this contract?",
+    placeholder="Example: What are the termination clauses in this contract?",
     height=120,
 )
-if st.button("Submit"):
-    if prompt and prompt.strip():
-        st.info("This version currently focuses on document processing and vector storage.")
-    else:
+
+if st.button("🔍 Search"):
+    if not prompt or not prompt.strip():
         st.warning("Please enter a question first.")
+    else:
+        with st.spinner("🔎 Running hybrid retrieval (dense + BM25 + RRF + rerank)…"):
+            try:
+                hits = retrieve(
+                    query=prompt,
+                    collection_name=COLLECTION,
+                    persist_dir=PERSIST_DIR,
+                    document_filter=doc_filter,
+                    section_filter=section_filter,
+                    top_n_final=top_n_final,
+                    use_reranker=use_reranker,
+                )
+            except Exception as exc:
+                st.error(f"❌ Retrieval failed: {exc}")
+                hits = []
+
+        if not hits:
+            st.warning("No matching chunks found. Try uploading and embedding a document first.")
+        else:
+            st.success(f"✅ Found {len(hits)} relevant chunks")
+
+            # ---------- Generation (Grok) ----------
+            with st.spinner("🧠 Generating answer from retrieved chunks…"):
+                try:
+                    gen_result = generate_answer(prompt, hits)
+                except Exception as exc:
+                    gen_result = None
+                    st.error(f"❌ Answer generation failed: {exc}")
+
+            if gen_result:
+                st.subheader("📝 Answer")
+                st.markdown(gen_result["answer"])
+                if gen_result["used_chunk_ids"]:
+                    st.caption("Cited chunks: " + ", ".join(f"`{cid}`" for cid in gen_result["used_chunk_ids"]))
+                st.markdown("---")
+
+            st.subheader("🔍 Retrieved Chunks")
+            for rank, hit in enumerate(hits, start=1):
+                score_label = (
+                    f"Rerank: {hit['rerank_score']:.3f}"
+                    if hit.get("rerank_score") is not None
+                    else f"RRF: {hit['rrf_score']:.4f}"
+                )
+                with st.expander(
+                    f"#{rank}  •  {score_label}  •  📄 {hit['document_name']}"
+                ):
+                    st.caption(f"**Chunk ID:** `{hit['chunk_id']}`")
+                    st.caption(f"**Section:** {hit['section'] or '(none)'} / {hit['subsection'] or '(none)'}")
+                    st.caption(f"**Hierarchy:** {hit['hierarchy'] or '(none)'}")
+                    st.caption(
+                        f"**Scores** — dense: {hit['dense_score']:.3f}"
+                        if hit.get("dense_score") is not None else "**Scores** — dense: n/a"
+                    )
+                    st.markdown("---")
+                    st.markdown(hit["text"])
