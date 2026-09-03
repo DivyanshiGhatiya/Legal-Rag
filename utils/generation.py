@@ -1,9 +1,12 @@
 import os
 from openai import OpenAI
+from dotenv import load_dotenv
+
+load_dotenv()
 
 GROQ_API_KEY_ENV = "GROQ_API_KEY"
 GROQ_BASE_URL = "https://api.groq.com/openai/v1"
-GROQ_MODEL = "llama-3.3-70b-versatile"
+GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
 
 SYSTEM_PROMPT = """You are a legal assistant answering questions strictly using the provided context chunks from legal documents.
 
@@ -39,7 +42,7 @@ def _build_context_block(chunks):
     return "\n\n---\n\n".join(parts)
 
 
-def generate_answer(query, retrieved_chunks, model=GROQ_MODEL, temperature=0.1, max_tokens=800):
+def generate_answer(query, retrieved_chunks, model=GROQ_MODEL, temperature=0.1, max_tokens=1200):
     """
     Send retrieved chunks + query to Grok and get a citation-aware answer.
 
@@ -86,7 +89,12 @@ Answer the question using only the context above. Cite chunk IDs inline like [ch
         max_tokens=max_tokens,
     )
 
-    answer_text = response.choices[0].message.content
+    answer_text = (response.choices[0].message.content or "").strip()
+    if not answer_text:
+        answer_text = (
+            "The language model returned no answer text. "
+            "Please try the search again with a shorter question."
+        )
 
     used_chunk_ids = [c["chunk_id"] for c in retrieved_chunks if c["chunk_id"] in answer_text]
 

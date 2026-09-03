@@ -36,7 +36,7 @@ def _load_corpus(collection_name=DEFAULT_COLLECTION_NAME, persist_dir=DEFAULT_PE
 
     ids = raw.get("ids", [])
     documents = raw.get("documents", [])
-    metadatas = raw.get("metadatas", [])
+    metadatas = [metadata or {} for metadata in raw.get("metadatas", [])]
 
     tokenized = [_tokenize(doc) for doc in documents]
     bm25 = BM25Okapi(tokenized) if tokenized else None
@@ -85,6 +85,7 @@ def dense_search(query, top_k=20, collection_name=DEFAULT_COLLECTION_NAME,
 
     for i, chunk_id in enumerate(results["ids"][0]):
         meta = results["metadatas"][0][i] if results.get("metadatas") else {}
+        meta = meta or {}
         output.append({
             "chunk_id": chunk_id,
             "text": results["documents"][0][i] if results.get("documents") else "",
