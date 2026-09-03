@@ -296,8 +296,19 @@ if st.button("🔍 Search"):
             if gen_result:
                 st.subheader("📝 Answer")
                 st.markdown(gen_result["answer"])
-                if gen_result["used_chunk_ids"]:
-                    st.caption("Cited chunks: " + ", ".join(f"`{cid}`" for cid in gen_result["used_chunk_ids"]))
+                citation_report = gen_result.get("citation_report")
+                if citation_report:
+                    if citation_report["is_valid"]:
+                        st.success("✅ Citation verification passed")
+                    else:
+                        st.warning("⚠️ Citation verification found issues")
+                        for problem in citation_report["problems"]:
+                            st.caption(problem)
+                    if citation_report["citations"]:
+                        st.caption(
+                            "Verified chunks: "
+                            + ", ".join(f"`{cid}`" for cid in citation_report["citations"])
+                        )
                 st.markdown("---")
 
             st.subheader("🔍 Retrieved Chunks")
