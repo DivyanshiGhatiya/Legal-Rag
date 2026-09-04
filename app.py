@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 
 """
 Legal RAG prototype:
@@ -6,10 +7,17 @@ Legal RAG prototype:
 - Hierarchical chunking of the cleaned text → preview + metadata → saved JSON.
 - Local embedding with Ollama and storage in ChromaDB.
 - Hybrid retrieval (dense + BM25 + RRF fusion + cross-encoder rerank) demo.
+=======
+"""Backend controller for the Legal RAG application.
+The Streamlit frontend imports this module as its application API. Keeping
+the pipeline here makes ingestion and question answering reusable from other
+frontends and gives the UI one consistent error/result contract.
+>>>>>>> Stashed changes
 """
 
 import os
-import streamlit as st
+from typing import Any, Dict, List, Optional
+
 from utils.chunker import create_chunks_hierarchical, save_chunked
 from utils.pdf_processor import (
     validate_pdf,
@@ -26,203 +34,168 @@ from utils.embedding import (
     DEFAULT_COLLECTION_NAME,
     DEFAULT_PERSIST_DIR,
 )
-from utils.retrieval import retrieve, refresh_corpus_cache
+from utils.retrieval import refresh_corpus_cache, retrieve
 from utils.generation import generate_answer
 from utils.query_rewriter import rewrite_query
 
 # ----------------------------------------------------------------------
 # Page configuration
 # ----------------------------------------------------------------------
-st.set_page_config(
-    page_title="Legal RAG – Week 3",
-    page_icon="⚖️",
-    layout="centered",
-)
-
-# ----------------------------------------------------------------------
-# Sidebar
-# ----------------------------------------------------------------------
-with st.sidebar:
-    st.title("⚖️ Legal RAG")
-    st.caption(
-        "Prototype: PDF upload → ingestion → hierarchical chunking → embedding → "
-        "ChromaDB storage → hybrid retrieval (dense + BM25 + rerank)."
-    )
-    st.info(
-        "Uploaded PDFs are saved to `data/uploads/` (raw). "
-        "Processed JSONs go to `processed_data/`. "
-        "Chunked JSONs go to `chunked_data/`."
-    )
-
-# ----------------------------------------------------------------------
-# Ensure folders exist
-# ----------------------------------------------------------------------
 UPLOAD_DIR = os.path.join("data", "uploads")
-PROCESSED_DIR = os.path.join("processed_data")
-CHUNKED_DIR = os.path.join("chunked_data")
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-os.makedirs(PROCESSED_DIR, exist_ok=True)
-os.makedirs(CHUNKED_DIR, exist_ok=True)
+PROCESSED_DIR = "processed_data"
+CHUNKED_DIR = "chunked_data"
+INDEX_MANIFEST_PATH = os.path.join("data", "chroma_manifest.json")
 
-COLLECTION = DEFAULT_COLLECTION_NAME
-PERSIST_DIR = DEFAULT_PERSIST_DIR
 
-# ----------------------------------------------------------------------
-# Main area: PDF uploader & processing
-# ----------------------------------------------------------------------
-st.header("📄 Upload Legal PDF(s) for Processing")
+def _error_result(message: str, stage: str, **extra: Any) -> Dict[str, Any]:
+    """Return the stable failure shape consumed by the frontend."""
+    return {
+        **extra,
+        "success": False,
+        "error": {"stage": stage, "message": message},
+    }
 
-uploaded_files = st.file_uploader(
-    label="Drop one or more PDF files here",
-    type=["pdf"],
-    accept_multiple_files=True,
-    help="Each PDF will be validated, text extracted, cleaned, saved as JSON, then hierarchically chunked.",
-)
 
-if uploaded_files:
-    for uploaded_file in uploaded_files:
-        with st.expander(f"📄 {uploaded_file.name}", expanded=True):
-            # Read the file bytes once
-            file_bytes = uploaded_file.getvalue()
-            document_hash = compute_file_hash(file_bytes)
+def process_document(file_name: str, file_bytes: bytes) -> Dict[str, Any]:
+    """Validate, persist, chunk, and embed one uploaded PDF.
 
-            # ---------- Validation ----------
-            is_valid, err_msg = validate_pdf(file_bytes)
-            if not is_valid:
-                st.error(f"❌ Validation failed: {err_msg}")
-                continue
+    All pipeline work belongs here; the returned dictionary is safe for a UI
+    to render even when an individual stage fails.
+    """
+    result: Dict[str, Any] = {
+        "success": False,
+        "error": None,
+        "file_name": file_name,
+        "document_hash": compute_file_hash(file_bytes),
+        "extraction": None,
+        "cleaned_text": "",
+        "chunks": [],
+        "paths": {},
+        "embedded_count": 0,
+        "already_embedded": False,
+    }
 
-            # Save raw upload (for later weeks)
-            raw_save_path = os.path.join(UPLOAD_DIR, uploaded_file.name)
-            with open(raw_save_path, "wb") as f:
-                f.write(file_bytes)
-            st.caption(f"Raw file saved to `{raw_save_path}`")
+    is_valid, validation_message = validate_pdf(file_bytes)
+    if not is_valid:
+        return _error_result(validation_message, "validation", **result)
 
-            # ---------- Extraction ----------
-            try:
-                extraction = extract_text_and_metadata(file_bytes)
-            except Exception as exc:
-                st.error(f"❌ Text extraction failed: {exc}")
-                continue
+    try:
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        raw_path = os.path.join(UPLOAD_DIR, os.path.basename(file_name))
+        with open(raw_path, "wb") as output_file:
+            output_file.write(file_bytes)
+        result["paths"]["raw"] = raw_path
+    except Exception as exc:
+        return _error_result(str(exc), "upload_save", **result)
 
-            # Augment metadata with original filename (used for saving & chunking)
-            extraction["file_name"] = uploaded_file.name
+    try:
+        extraction = extract_text_and_metadata(file_bytes)
+        extraction["file_name"] = file_name
+        result["extraction"] = extraction
+    except Exception as exc:
+        return _error_result(str(exc), "extraction", **result)
 
-            # ---------- Cleaning ----------
-            cleaned_text = clean_text(extraction["text"])
+    try:
+        cleaned_text = clean_text(extraction["text"])
+        result["cleaned_text"] = cleaned_text
+        result["paths"]["processed"] = save_processed(
+            metadata=extraction,
+            cleaned_text=cleaned_text,
+            output_dir=PROCESSED_DIR,
+        )
+    except Exception as exc:
+        return _error_result(str(exc), "cleaning_or_processed_save", **result)
 
-            # ---------- Save processed JSON ----------
-            try:
-                saved_processed_path = save_processed(
-                    metadata=extraction,
-                    cleaned_text=cleaned_text,
-                    output_dir=PROCESSED_DIR,
+    try:
+        chunks = create_chunks_hierarchical(
+            doc_meta=extraction,
+            cleaned_text=cleaned_text,
+            chunk_size=1000,
+            overlap=200,
+        )
+        result["chunks"] = chunks
+        if chunks:
+            result["paths"]["chunked"] = save_chunked(chunks, output_dir=CHUNKED_DIR)
+    except Exception as exc:
+        return _error_result(str(exc), "chunking", **result)
+
+    if not chunks:
+        result["success"] = True
+        return result
+
+    try:
+        already_embedded = document_already_embedded(
+            file_name,
+            result["document_hash"],
+            collection_name=DEFAULT_COLLECTION_NAME,
+            persist_dir=DEFAULT_PERSIST_DIR,
+        )
+        result["already_embedded"] = already_embedded
+        if not already_embedded:
+            embedded_records = embed_chunks(
+                chunks,
+                collection_name=DEFAULT_COLLECTION_NAME,
+                persist_dir=DEFAULT_PERSIST_DIR,
+                document_name=file_name,
+                document_hash=result["document_hash"],
+            )
+            result["embedded_count"] = len(embedded_records)
+            if embedded_records:
+                result["paths"]["index_manifest"] = save_index_manifest(
+                    embedded_records,
+                    output_path=INDEX_MANIFEST_PATH,
                 )
-                st.success(f"✅ Processed JSON saved to: `{saved_processed_path}`")
-            except Exception as exc:
-                st.error(f"❌ Failed to save processed output: {exc}")
-                continue  # Skip chunking if we couldn't save the base file
-
-            # ---------- Hierarchical Chunking ----------
-            try:
-                chunks = create_chunks_hierarchical(
-                    doc_meta=extraction,
-                    cleaned_text=cleaned_text,
-                    chunk_size=1000,   # feel free to tune
-                    overlap=200,
+                refresh_corpus_cache(
+                    collection_name=DEFAULT_COLLECTION_NAME,
+                    persist_dir=DEFAULT_PERSIST_DIR,
                 )
-            except Exception as exc:
-                st.error(f"❌ Chunking failed: {exc}")
-                continue
+    except Exception as exc:
+        return _error_result(str(exc), "embedding", **result)
 
-            # Show chunking results
-            st.subheader(f"🔢 Chunks Created: {len(chunks)}")
-            if chunks:
-                # Preview of the first chunk
-                first_preview = chunks[0]["text"]
-                if len(first_preview) > 500:
-                    first_preview = first_preview[:500] + "..."
-                st.text_area(
-                    label="Preview of first chunk (first 500 chars)",
-                    value=first_preview,
-                    height=150,
-                    disabled=True,
-                )
+    result["success"] = True
+    return result
 
-                with st.expander("Show chunk metadata (first 5)"):
-                    meta_rows = []
-                    for i, c in enumerate(chunks[:5], start=1):
-                        hierarchy_path = " > ".join(
-                            c.get("metadata", {}).get("hierarchy", [])
-                        ) or "(no headings detected)"
-                        meta_rows.append(
-                            {
-                                "Chunk ID": c["chunk_id"],
-                                "Chunk #": i,
-                                "Length (chars)": c["chunk_length"],
-                                "Hierarchy": hierarchy_path,
-                            }
-                        )
-                    st.dataframe(meta_rows)
 
-                # Save chunked JSON
-                try:
-                    saved_chunk_path = save_chunked(chunks, output_dir=CHUNKED_DIR)
-                    st.success(f"✅ Chunked JSON saved to: `{saved_chunk_path}`")
-                except Exception as exc:
-                    st.error(f"❌ Failed to save chunked output: {exc}")
+def query_legal_documents(
+    query: str,
+    document_filter: Optional[str] = None,
+    section_filter: Optional[str] = None,
+    top_n_final: int = 5,
+    use_reranker: bool = True,
+) -> Dict[str, Any]:
+    """Run retrieval and answer generation, returning one structured result."""
+    base = {"query": query, "hits": [], "answer": None}
+    if not query or not query.strip():
+        return _error_result("Question cannot be empty.", "query_validation", **base)
 
-                # Embed chunks locally with Ollama + ChromaDB
-                try:
-                    already_embedded = document_already_embedded(
-                        uploaded_file.name,
-                        document_hash,
-                        collection_name=COLLECTION,
-                        persist_dir=PERSIST_DIR,
-                    )
-                    if already_embedded:
-                        st.info(
-                            "ℹ️ Embedding already exists for this document. "
-                            "Skipping re-embedding and reusing the stored vectors."
-                        )
-                    else:
-                        embedded_records = embed_chunks(
-                            chunks,
-                            collection_name=COLLECTION,
-                            persist_dir=PERSIST_DIR,
-                            document_name=uploaded_file.name,
-                            document_hash=document_hash,
-                        )
-                        if embedded_records:
-                            manifest_path = save_index_manifest(
-                                embedded_records,
-                                output_path=os.path.join("data", "chroma_manifest.json"),
-                            )
-                            st.success(
-                                f"✅ Embedding complete: {len(embedded_records)} chunks stored locally in ChromaDB."
-                            )
-                            st.caption(f"Manifest saved to: `{manifest_path}`")
-                            # New chunks were added — refresh the in-memory BM25 index
-                            refresh_corpus_cache(collection_name=COLLECTION, persist_dir=PERSIST_DIR)
-                        else:
-                            st.info("ℹ️ No chunks were embedded.")
-                except Exception as exc:
-                    st.warning(f"⚠️ Embedding could not be completed: {exc}")
+    try:
+        hits = retrieve(
+            query=query,
+            collection_name=DEFAULT_COLLECTION_NAME,
+            persist_dir=DEFAULT_PERSIST_DIR,
+            document_filter=document_filter,
+            section_filter=section_filter,
+            top_n_final=top_n_final,
+            use_reranker=use_reranker,
+        )
+        base["hits"] = hits
+    except Exception as exc:
+        return _error_result(str(exc), "retrieval", **base)
 
-# ----------------------------------------------------------------------
-# Embedding + vector-store status
-# ----------------------------------------------------------------------
-st.header("🗂️ Embedding + Vector Store")
-st.info(
-    "Documents are chunked hierarchically, embedded locally with Ollama "
-    "(`nomic-embed-text`), and stored in ChromaDB."
-)
+    if not base["hits"]:
+        base["success"] = True
+        base["answer"] = {
+            "answer": "No relevant context was retrieved for this question from the currently indexed documents.",
+            "used_chunk_ids": [],
+        }
+        return base
 
-# ----------------------------------------------------------------------
-# 💬 Ask a Legal Question (Hybrid Retrieval Demo)
-# ----------------------------------------------------------------------
-st.header("💬 Ask a Legal Question")
+    try:
+        base["answer"] = generate_answer(query, base["hits"])
+    except Exception as exc:
+        return _error_result(str(exc), "generation", **base)
 
+<<<<<<< Updated upstream
 if "chat_messages" not in st.session_state:
     st.session_state.chat_messages = []
 
@@ -247,26 +220,23 @@ try:
         })
 except Exception:
     available_docs = []
+=======
+    base["success"] = True
+    return base
+>>>>>>> Stashed changes
 
-doc_choice = st.selectbox(
-    "Restrict search to a specific document (optional):",
-    options=["(All documents)"] + available_docs,
-    index=0,
-)
-doc_filter = None if doc_choice == "(All documents)" else doc_choice
 
-section_filter_input = st.text_input(
-    "Restrict search to a section/heading containing (optional):",
-    placeholder="e.g. Confidentiality",
-)
-section_filter = section_filter_input.strip() or None
+def list_indexed_documents() -> List[str]:
+    """Return unique source names currently stored in ChromaDB."""
+    try:
+        collection = get_collection(DEFAULT_COLLECTION_NAME, DEFAULT_PERSIST_DIR)
+        metadata = collection.get(include=["metadatas"]).get("metadatas") or []
+        return sorted({item.get("source_name") for item in metadata if item and item.get("source_name")})
+    except Exception:
+        return []
 
-col1, col2 = st.columns(2)
-with col1:
-    top_n_final = st.slider("Final number of chunks to return:", 1, 10, 5)
-with col2:
-    use_reranker = st.checkbox("Use cross-encoder reranking", value=True)
 
+<<<<<<< Updated upstream
 prompt = st.text_area(
     "Type your legal question",
     placeholder="Example: What are the termination clauses in this contract?",
@@ -353,3 +323,13 @@ if st.button("🔍 Search"):
                     )
                     st.markdown("---")
                     st.markdown(hit["text"])
+=======
+def get_corpus_metrics() -> Dict[str, Any]:
+    """Return lightweight corpus metrics for dashboard cards."""
+    try:
+        collection = get_collection(DEFAULT_COLLECTION_NAME, DEFAULT_PERSIST_DIR)
+        count = collection.count()
+        return {"indexed_documents": len(list_indexed_documents()), "indexed_chunks": count, "error": None}
+    except Exception as exc:
+        return {"indexed_documents": 0, "indexed_chunks": 0, "error": str(exc)}
+>>>>>>> Stashed changes
