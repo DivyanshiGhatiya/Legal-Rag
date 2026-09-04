@@ -168,7 +168,14 @@ def _build_context_block(chunks):
     return "\n\n---\n\n".join(parts)
 
 
-def generate_answer(query, retrieved_chunks, model=GROQ_MODEL, temperature=0.1, max_tokens=1200):
+def generate_answer(
+    query,
+    retrieved_chunks,
+    model=GROQ_MODEL,
+    temperature=0.1,
+    max_tokens=1200,
+    conversation_history=None,
+):
     """
     Send retrieved chunks + query to the model and get a citation-aware answer.
 
@@ -194,12 +201,20 @@ def generate_answer(query, retrieved_chunks, model=GROQ_MODEL, temperature=0.1, 
 
     context_block = _build_context_block(retrieved_chunks)
 
+    history_block = ""
+    if conversation_history:
+        recent_history = conversation_history[-6:]
+        history_block = "\nPrior conversation (use only to resolve references):\n" + "\n".join(
+            f"{message['role']}: {message['content']}" for message in recent_history
+        ) + "\n"
+
     user_prompt = f"""Context chunks:
 
 {context_block}
 
 ---
 
+{history_block}
 Question: {query}
 
 Answer the question using only the context above. Cite chunk IDs inline like [exact_chunk_id] for every claim.

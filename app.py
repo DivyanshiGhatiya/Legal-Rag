@@ -1,4 +1,4 @@
-# app.py
+
 """
 Legal RAG prototype:
 - Sidebar with title/description.
@@ -28,6 +28,7 @@ from utils.embedding import (
 )
 from utils.retrieval import retrieve, refresh_corpus_cache
 from utils.generation import generate_answer
+from utils.query_rewriter import rewrite_query
 
 # ----------------------------------------------------------------------
 # Page configuration
@@ -222,6 +223,17 @@ st.info(
 # ----------------------------------------------------------------------
 st.header("💬 Ask a Legal Question")
 
+if "chat_messages" not in st.session_state:
+    st.session_state.chat_messages = []
+
+if st.button("🧹 New conversation"):
+    st.session_state.chat_messages = []
+    st.rerun()
+
+for message in st.session_state.chat_messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
 # Try to list already-indexed documents for the dropdown
 available_docs = []
 try:
@@ -265,10 +277,14 @@ if st.button("🔍 Search"):
     if not prompt or not prompt.strip():
         st.warning("Please enter a question first.")
     else:
+        conversation_history = list(st.session_state.chat_messages)
+        retrieval_query = rewrite_query(prompt, conversation_history)
+        st.session_state.chat_messages.append({"role": "user", "content": prompt})
+
         with st.spinner("🔎 Running hybrid retrieval (dense + BM25 + RRF + rerank)…"):
             try:
                 hits = retrieve(
-                    query=prompt,
+                    query=retrieval_query,
                     collection_name=COLLECTION,
                     persist_dir=PERSIST_DIR,
                     document_filter=doc_filter,
@@ -288,12 +304,19 @@ if st.button("🔍 Search"):
             # ---------- Generation (Grok) ----------
             with st.spinner("🧠 Generating answer from retrieved chunks…"):
                 try:
-                    gen_result = generate_answer(prompt, hits)
+                    gen_result = generate_answer(
+                        prompt,
+                        hits,
+                        conversation_history=conversation_history,
+                    )
                 except Exception as exc:
                     gen_result = None
                     st.error(f"❌ Answer generation failed: {exc}")
 
             if gen_result:
+                st.session_state.chat_messages.append(
+                    {"role": "assistant", "content": gen_result["answer"]}
+                )
                 st.subheader("📝 Answer")
                 st.markdown(gen_result["answer"])
                 citation_report = gen_result.get("citation_report")

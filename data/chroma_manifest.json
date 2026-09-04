@@ -1,20 +1,596 @@
 {
   "documents": [
     {
-      "chunk_id": "Test_Contract_CitationCheck_CHUNK_0001",
-      "text": "SERVICE AGREEMENT BETWEEN ACME CONSULTING PVT. LTD. AND NORTHSTAR RETAIL LTD. Effective Date: 1 April 2026 Clause 1 - Term of Agreement This Agreement shall commence on 1 April 2026 and shall remain in force for a period of twenty-four (24) months, unless terminated earlier in accordance with Clause 7. Upon expiry, the Agreement may be renewed for successive periods of twelve (12) months by mutual written consent of both parties. Clause 2 - Scope of Services Acme Consulting Pvt. Ltd (the \"Consultant\") shall provide data analytics, dashboard development, and monthly performance reporting services to Northstar Retail Ltd (the \"Client\") as further described in Schedule A. The Consultant shall deliver one comprehensive report on the fifteenth day of each calendar month. Clause 3 - Fees and Payment The Client shall pay the Consultant a fixed monthly fee of Rs. 4,50,000 (Rupees Four Lakh Fifty Thousand only), payable within fifteen (15) days of receipt of a valid invoice."
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0001",
+      "text": "JAYPEE UNIVERSITY OF ENGINEERING AND TECHNOLOGY\n\nDECLARATION\n\nI hereby declare that the work reported in the summer internship report entitled as “ Dynamic, Scalable, and Resilient Resource Optimization for SemanticAware Edge Networks Under On-Device Extraction Energy Taxes”, in partial fulfillment for the award of degree of B.Tech. (CSE) submitted at Jaypee University of Engineering and Technology, Guna, as per best of my knowledge and belief there is no infringement of intellectual property right and copyright. In case of any violation, I will solely be esponsible.\n\nSignature of the Student\n\nPlace: Date:"
     },
     {
-      "chunk_id": "Test_Contract_CitationCheck_CHUNK_0002",
-      "text": "Late payments shall accrue interest at a rate of 1.5% per month on the outstanding balance. Clause 4 - Confidentiality Each party agrees to keep confidential all non-public information disclosed by the other party during the term of this Agreement and for a period of three (3) years following its termination. Confidential information shall not include information that is independently developed or lawfully obtained from a third party. Clause 5 - Intellectual Property All deliverables, reports, dashboards, and analytical models created by the Consultant under this Agreement shall be the exclusive property of the Client upon full payment of applicable fees. The Consultant retains ownership of any pre-existing tools, templates, or proprietary methodologies used in the course of delivering the Services."
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0002",
+      "text": "INTERNSHIP COMPLETION CERTIFICATE\n\nAcknowledgement\n\nI would like to express my sincere gratitude and deep sense of reverence to my mentor, Dr Ayan Mondal, Assistant Professor at the Indian Institute of Technology (IIT) Indore, for his invaluable guidance, continuous encouragement, and insightful feedback throughout the duration of this research internship. His vision and deep expertise in Mobile Edge Computing and Edge-AI networks were instrumental in shaping this project. I would also like to thank my co-intern, Divyanshi Ghatiya, for the close collaboration and countless hours of joint discussion, coding, and experimentation that went into building and evaluating the proposed framework.I am also extremely thankful to the Department of Computer Science & Engineering, Jaypee University of Engineering & Technology, Guna, for providing the necessary support and academic foundation to pursue this research endeavor."
     },
     {
-      "chunk_id": "Test_Contract_CitationCheck_CHUNK_0003",
-      "text": "The Consultant retains ownership of any pre-existing tools, templates, or proprietary methodologies used in the course of delivering the Services. Clause 6 - Limitation of Liability The Consultant's total liability under this Agreement, whether in contract, tort, or otherwise, shall not exceed the total fees paid by the Client in the six (6) months preceding the event giving rise to the claim. Neither party shall be liable for indirect, incidental, or consequential damages. Clause 7 - Termination Either party may terminate this Agreement for convenience by providing sixty (60) days' written notice to the other party. Either party may terminate this Agreement immediately upon written notice if the other party commits a material breach that remains uncured for thirty (30) days after receiving notice of such breach. Clause 8 - Governing Law This Agreement shall be governed by and construed in accordance with the laws of India."
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0003",
+      "text": "Finally, I extend my heartfelt gratitude to my family and peers for their constant encouragement during this period. Shiva Rathore\n\nExecutive Summary\n\nThe rapid expansion of artificial intelligence at the network edge, coupled with the exponential growth of Internet of Things (IoT) deployments, has initiated a fundamental transformation in Mobile Edge Computing (MEC) paradigms. Modern edge computing setups are moving away from traditional, raw, bitstream- heavy task offloading and toward semantic-aware communication frameworks. Traditional offloading schemes focus almost exclusively on mitigating wireless channel congestion by transmitting low-dimensional latent feature embeddings (K- values) extracted from source data, rather than sending full raw data streams."
     },
     {
-      "chunk_id": "Test_Contract_CitationCheck_CHUNK_0004",
-      "text": "Clause 8 - Governing Law This Agreement shall be governed by and construed in accordance with the laws of India. The courts at Mumbai shall have exclusive jurisdiction over any disputes arising out of or in connection with this Agreement. Clause 9 - Dispute Resolution In the event of any dispute, the parties shall first attempt to resolve the matter through good-faith negotiation for a period of thirty (30) days. If the dispute remains unresolved, either party may refer the matter to arbitration under the Arbitration and Conciliation Act, 1996, with the seat of arbitration in Mumbai. Clause 10 - Entire Agreement This Agreement, together with Schedule A, constitutes the entire understanding between the parties and supersedes all prior discussions, negotiations, and agreements, whether written or oral, relating to its subject matter."
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0004",
+      "text": "While this approach significantly lowers spectrum usage and raw transmission time, existing frameworks operate under a critical, flawed assumption: they assume that on-device semantic feature extraction by local neural encoders is computationally cost-free. In real-world deployments on resource-constrained hardware—such as microcontroller units (MCUs) and low-power mobile devices—running onboard neural network encoders imposes a heavy computational extraction energy tax (Eext). Ignoring this local compute tax leads to severe miscalculations in battery lifetime models, resulting in unpredicted power drain, premature node failure, and catastrophic network topology degradation. To solve these interconnected challenges, this report details the research and engineering work conducted during my individual research internship at the Indian Institute of Technology (IIT) Indore under the supervision of Dr Ayan Mondal."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0005",
+      "text": "We introduce CASCO (Context-Adaptive Semantic Compression and Offloading), a unified, dynamic, scalable, and resilient resource optimization framework. CASCO utilizes a parameter-shared Multi-Agent Proximal Policy Optimization (MAPPO) architecture operating under the Centralized Training with Decentralized Execution (CTDE) paradigm. The system dynamically adjusts semantic compression depths (Khigh vs. Klow) in real time based on physical channel gains, multi-server queue backlogs, user mobility patterns, and localized battery states. Rigorous numerical simulations in PyTorch show that CASCO successfully avoids training collapses common in traditional value-based multi-agent reinforcement learning (MARL) algorithms (such as DQN and DDQN)."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0006",
+      "text": "LIST OF FIGURES\n\no Figure 1.1: System Architecture of Multi-Server Semantic-Aware MEC Network o Figure 2.1: Management and Research Supervision Hierarchy at IIT Indore o Figure 3.1: Conventional Raw Offloading vs. Context-Adaptive Semantic Offloading Pipeline o Figure 3.2: System Quality of experience(QoE) Convergence o Figure 3.3: On-Device Extraction Tax within the Offload Pipeline o Figure 4.1: Overall Operational Workflow of the CASCO Framework Engine o Figure 4.2: On-Device Deep Semantic Encoder Architecture & Latent Vector Generation o Figure 4.3: Dynamic Fallback Logic (Khigh VS Klow) Under Local Battery Stress o Figure 4.4:Semantic ,Edge and RIS in AI-Native 6G Networks o Figure 4.5: Categorical Action Space Factorization (5-Tuple Vector) o Figure 4.6: Dense Reward Gradient Surface vs. Sparse Reward Landscape o Figure4.7: Parameter-Shared MAPPO Architecture Under CTDE Paradigm o Figure 5.1: Training Convergence Comparison: MAPPO vs. DQN vs."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0007",
+      "text": "Sparse Reward Landscape o Figure4.7: Parameter-Shared MAPPO Architecture Under CTDE Paradigm o Figure 5.1: Training Convergence Comparison: MAPPO vs. DQN vs. DDQN (Reward, Latency, Sum QoE) o Figure 5.2: Network Lifetime Analytics & Individual Critical Node Energy Trajectory o Figure 5.3: Scalability of Shared-Actor Network Across User Densities (4 to 32 UEs) o Figure5.4: Quality of Experience (QoE) Sensitivity to Semantic Compression Level k o Figure5.5:Fixed Noise Model diagram o Figure 5.6: Ablation Study Comparison Across Training Episodes (Reward, Queue Length, Latency, Sum QoE) o Figure5.7:Semantic accuracy& QoE against Spectral density o Figure 5.8: Execution Latency"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0008",
+      "text": "TABLE OF CONTENTS\n\nTitle Page\n\ni\n\nDeclaration of the Student\n\nii\n\nInternship Completion Certificate\n\niii\n\nAcknowledgement\n\niv\n\nExecutive Summary\n\nv\n\nList of Figures\n\nvi\n\n1. Introduction"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0009",
+      "text": "1 1.1 Background of the study"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0010",
+      "text": "1 1.2 Project Statement"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0011",
+      "text": "3 1.3 Objectives"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0012",
+      "text": "4 1.4 Scope of the project"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0013",
+      "text": "5 1.5 Organization of the report"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0014",
+      "text": "6 2. Description of Organization/Institute"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0015",
+      "text": "7 2.1 About Organization"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0016",
+      "text": "7 2.2 Work Culture"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0017",
+      "text": "8 2.3 Management Hierarchy"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0018",
+      "text": "9 3. Description of Work"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0019",
+      "text": "10 3.1 Existing System"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0020",
+      "text": "10 3.2 Limitations of existing work"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0021",
+      "text": "12 3.3 Proposed System"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0022",
+      "text": "14 3.4 Feasibility Setup"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0023",
+      "text": "16 4. Proposed Methodology"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0024",
+      "text": "17 4.1 Requirement Specification"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0025",
+      "text": "17 4.2 Overall Workflow"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0026",
+      "text": "19 4.3 Task Modality&Models"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0027",
+      "text": "21 4.4 On-Device Extraction"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0028",
+      "text": "22 4.5 Channel Selection"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0029",
+      "text": "23 4.6 Consumption Framework"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0030",
+      "text": "24 4.7 Queuing Dynamics"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0031",
+      "text": "25 4.8 Action Space Factorization"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0032",
+      "text": "26 4.9 Threshold vs Reward Function 27 4.10 Parameter Configuration"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0033",
+      "text": "28 4.11 Experimental Configuration 29 5. Experimentation Analysis"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0034",
+      "text": "30 5.1 Experimental Design"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0035",
+      "text": "30 5.2 Experimental Results"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0036",
+      "text": "31 5.3 Result Analysis"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0037",
+      "text": "36\n\n6. Conclusion and Future Scope"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0038",
+      "text": "40 6.1 Conclusion 40 6.2 Limitations 41 6.3 Future Scope 42 7. References"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0039",
+      "text": "43\n\n1 Chapter 1"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0040",
+      "text": "INTRODUCTION"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0041",
+      "text": "1.1 Background of the study\n\nThe integration of Artificial Intelligence (AI) with Mobile Edge Computing (MEC) has enabled resource-constrained mobile devices and Internet of Things (IoT) nodes to offload computationally expensive tasks—such as computer vision, natural language processing, and multi-modal sensing—to edge servers. These edge servers are placed close to base stations to process data faster than central cloud servers. However, as next-generation wireless networks (5G-Advanced and 6G) scale up, transmitting raw, high-volume data streams (e.g, high-definition video feeds or uncompressed text payloads) leads to spectrum congestion, high queue latencies, and high energy consumption over the air. Figure 1.1: Multi-Server Semantic-Aware MEC Network\n\nTo address these transmission bottlenecks, semantic communication has emerged as a key alternative."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0042",
+      "text": "Figure 1.1: Multi-Server Semantic-Aware MEC Network\n\nTo address these transmission bottlenecks, semantic communication has emerged as a key alternative. Rather than transmitting raw pixels, audio samples, or uncompressed bits, semantic systems extract and transmit low-dimensional latent feature representations (K-values). These feature representations capture the core meaning of the data required by edge servers to complete tasks. By sending these low-dimensional"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0043",
+      "text": "2 features, semantic communications can achieve compression ratios of up to 90%, significantly reducing airtime transmission latency and over-the-air energy consumption. Despite these benefits, existing research often relies on a critical oversimplification: assuming that on-device semantic feature extraction is computationally free. In practice, executing deep neural network (DNN) encoders on resource-constrained microcontrollers introduces a non-negligible computational extraction tax (Eext). If an edge node aggressively extracts high-dimensional semantic features to save over-the- air transmission energy, it may end up rapidly depleting its onboard battery through local computation. This local battery drain can cause early node failure, breaking network connectivity and degrading overall system reliability."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0044",
+      "text": "This local battery drain can cause early node failure, breaking network connectivity and degrading overall system reliability. The sixth generation (6G) of wireless networks is expected to support a dense fabric of latency-sensitive, compute-intensive applications — real-time video analytics, augmented and virtual reality, autonomous navigation, and large-scale Internet-of- Things (IoT) sensing — on devices that remain constrained in battery capacity, processing power, and available spectrum. Mobile Edge Computing (MEC) has become the dominant architectural response to this constraint: rather than executing every task locally or shipping raw data to a distant cloud, computation is offloaded to small, geographically distributed \"edge servers\" co-located with base stations, which sit only a single wireless hop away from the user equipment (UE)."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0045",
+      "text": "Conventional MEC offloading, however, still transmits raw, high-volume bitstreams — images, video frames, sensor logs — over the wireless channel. As the number of connected devices grows and application payloads become richer, this raw-bit transmission model increasingly collides with the fundamental capacity limits of the wireless spectrum, described by the Shannon-Hartley theorem. This has motivated a shift toward semantic communication, a paradigm in which a device runs a lightweight neural encoder locally and transmits only a compact, task-relevant latent feature embedding rather than the full raw payload. Because these embeddings can be many times smaller than the original data while still preserving the information needed for the downstream inference task, semantic communication can dramatically reduce the wireless transmission burden of computation offloading."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0046",
+      "text": "3 1.2 Project Statement\n\nWhile semantic communication lowers wireless transmission costs, deploying it in edge networks introduces an unmodeled trade-off. Standard edge offloading literature assumes that generating semantic vectors on mobile devices incurs negligible computational overhead. However, executing deep convolutional or Transformer- based encoders on mobile hardware incurs a substantial computational feature extraction energy tax (Eext). If an edge node blindly maximizes semantic compression depth to minimize transmission energy, it risks rapidly exhausting its local battery through on-device model execution. In cooperative multi-user networks, unmonitored battery depletion leads to early node failures, disrupting routing topologies and reducing overall system capacity."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0047",
+      "text": "In cooperative multi-user networks, unmonitored battery depletion leads to early node failures, disrupting routing topologies and reducing overall system capacity. Additionally, managing multi-server edge allocations, dynamic compression levels, transmit power, and bandwidth slicing using multi-agent reinforcement learning (MARL) presents challenges like non-stationary environments and sparse reward policies that stall learning convergence The framework must meet the following functional criteria: 1. Dynamically adapt semantic compression levels (K-values) based on real-time channel conditions and remaining local battery levels. 2. Jointly optimize target server selection, offloading ratios, transmit power levels, sub-band bandwidth allocation, and semantic compression depth. 3. Maintain stable multi-agent reinforcement learning performance without policy collapses across dynamic, multi-user environments. 4."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0048",
+      "text": "Maintain stable multi-agent reinforcement learning performance without policy collapses across dynamic, multi-user environments. 4. Scale efficiently to handle dense edge deployments (up to 32 UEs) while making control decisions in sub-millisecond execution times. The internship further required that the resulting framework, named CASCO (Context- Adaptive Semantic Compression and Offloading), be evaluated against realistic baselines — including a policy that ignores the extraction tax altogether and value- based reinforcement learning algorithms such as DQN and DDQN — so that the practical benefit of jointly modelling the extraction tax and adopting a dense-reward, parameter-shared MAPPO architecture could be quantified rather than merely asserted."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0049",
+      "text": "4 1.3 Objectives\n\nThe overarching objective of this internship was to design, implement, and experimentally analyze a context-adaptive, energy-aware resource-optimization framework for semantic communication in mobile edge computing networks."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0050",
+      "text": "The specific objectives pursued during the internship are listed below. • To study the fundamentals of mobile edge computing, semantic communication, and multi-agent reinforcement learning, with particular attention to how each has been applied to computation offloading in 6G-oriented literature. • To identify and formally characterize the shortcomings of existing semantic- aware offloading frameworks, specifically the omission of the on-device semantic feature extraction energy tax and the reliance on single-server, static-user, sparse- reward simulation environments. • To design a corrected physical-layer model, based on Shannon-capacity link rates and an explicit signal-to-noise-ratio (SNR) to accuracy mapping, that makes quality-of-experience (QoE) genuinely sensitive to channel noise. • To formulate a total energy-consumption model for each user equipment that decomposes energy into wireless transmission energy, static circuit overhead, and the on-device semantic extraction tax, and to characterize how the latter scales with the semantic compression depth K. • To formulate the joint server-association, offloading, power-control, bandwidth- allocation, and compression-depth selection problem as a cooperative Multi- Agent Markov Decision Process (MDP). • To design and implement a parameter-shared actor-critic Multi-Agent Proximal Policy Optimization (MAPPO) architecture, trained under the Centralized- Training-Decentralized-Execution (CTDE) paradigm, together with a dense, threshold-aware reward function that avoids the sparse-reward learning pathology. • To experimentally evaluate the proposed CASCO framework against a baseline that omits the extraction tax and against value-based reinforcement learning baselines (DQN, DDQN), using metrics such as network lifetime, node-dropout horizon, energy savings, latency, and quality-of-experience. • To perform ablation studies isolating the individual contribution of the semantic tax modelling, dense reward shaping, multi-server topology, and user mobility to overall framework performance."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0051",
+      "text": "5 1.4 Scope of this project\n\nThe scope of the work undertaken during this internship was restricted to the design, simulation, and experimental evaluation of the CASCO resource-optimization framework; it did not extend to deployment on physical edge hardware or over a live wireless testbed. All experiments were conducted through discrete-time numerical simulation implemented in Python, in which the wireless channel, mobility pattern, task arrival process, and multi-agent policy were modelled explicitly rather than measured from real radio hardware. The project encompassed the construction of a corrected physical-layer model (Shannon-capacity link rate and SNR-dependent accuracy), an energy-consumption model incorporating the on-device semantic extraction tax, a cooperative Multi-Agent MDP formulation of the joint resource-allocation problem, and a parameter-shared MAPPO training pipeline evaluated under the Centralized-Training-Decentralized- Execution paradigm."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0052",
+      "text": "The framework was benchmarked against a static baseline policy that ignores the extraction tax and against two representative value-based multi-agent reinforcement learning baselines, DQN and DDQN, across convergence behaviour, network-lifetime metrics, and scalability from 4 to 32 user equipments. The techniques studied and implemented during this internship are broadly applicable to any 6G-oriented edge deployment in which battery-constrained devices must jointly decide how to compress and where to offload semantically meaningful data — including smart-city sensor networks, wearable health-monitoring devices, connected- vehicle perception pipelines, and industrial IoT deployments. By quantifying the true, extraction-tax-inclusive energy cost of semantic compression, the framework helps network operators and device manufacturers avoid resource-allocation policies that look efficient on paper but degrade battery life and network connectivity in practice."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0053",
+      "text": "The scope of this project explicitly excludes the following: deployment or field testing on physical 5G/6G radio hardware; training or fine-tuning of the underlying semantic feature-extraction neural encoders themselves (their computational cost is modelled parametrically rather than measured from a specific trained model); and human-subject quality-of-experience studies. All accuracy, energy, and QoE figures reported in this work are derived from the simulation's parametric models and are intended to demonstrate relative trends between the proposed framework and its baselines rather than to serve as absolute performance guarantees for a specific commercial device or chipset."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0054",
+      "text": "6 1.5 Organization of report\n\nThis report is organized into six chapters, each covering a specific aspect of the internship work and the reimplementation of the proposed long document summarization framework. Chapter 1: presents the introduction to the project, including its background and motivation, the precise project statement, the objectives pursued, and the scope and boundaries of the work. Chapter 2: provides an overview of the host institution, the Indian Institute of Technology Indore, describing its research environment, work culture, and the management and mentorship structure under which the internship was carried out. Chapter 3: reviews the existing literature on mobile edge computing, semantic communication, and multi-agent reinforcement learning for network resource allocation, discusses the specific limitations of this existing body of work, and introduces the proposed CASCO framework at a conceptual level, along with a feasibility analysis of the project."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0055",
+      "text": "Chapter 4: describes the proposed methodology in full technical detail, covering the hardware and software requirements, the overall system workflow, the corrected physical-channel and accuracy models, the energy-consumption model incorporating the semantic extraction tax, the state, action, and reward design of the Multi-Agent MDP, the MAPPO training architecture, and the evaluation methodology adopted. Chapter 5: presents the experimental analysis of the implemented framework, including the experimental design, the numerical results obtained across convergence, network-lifetime, scalability, and noise-sensitivity experiments, and a detailed interpretation of these results. Chapter 6: concludes the report by summarizing the major findings of the internship, discussing the limitations of the present implementation, and outlining directions for future work."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0056",
+      "text": "7 Chapter 2"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0057",
+      "text": "ORGANIZATION DESCRIPTION"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0058",
+      "text": "2.1 About the Organization\n\nThe Indian Institute of Technology (IIT) Indore is one of the newer Institutes of National Importance established by the Government of India under the Institutes of Technology (Amendment) Act, with a mandate to conduct high-quality teaching and research across engineering, science, and design disciplines. The institute has built a strong research base in areas that include wireless communication, signal processing, artificial intelligence, robotics, and computer science, and it regularly hosts undergraduate research interns from partner universities across the country who work alongside faculty members and doctoral scholars on active research problems."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0059",
+      "text": "Within the Department of Computer Science and Engineering (and its affiliated communication and networks research groups) at IIT Indore, ongoing research addresses next-generation (6G) wireless network design, resource allocation for edge and fog computing, reinforcement learning for networked systems, and semantic and goal-oriented communication. The institute's research culture emphasizes rigorous mathematical modelling of physical and network-layer phenomena combined with data-driven and learning-based optimization, which made it a well-suited environment for a project that sits precisely at the intersection of wireless system modelling and multi-agent reinforcement learning. IIT Indore maintains active collaboration with several national research bodies and industry partners in the domains of telecommunications and intelligent systems, and its faculty regularly publish in leading international venues covering wireless communication, networking, and machine learning."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0060",
+      "text": "This research orientation directly informed the standards of rigor — corrected physical-layer modelling, multi-seed statistical validation, and systematic ablation analysis — that were applied throughout this internship project."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0061",
+      "text": "8 2.2 Work Culture\n\nThe research internship at IIT Indore followed a structured yet independent mode of working, in which interns were expected to take ownership of a well-defined research problem while receiving regular technical guidance from their faculty supervisor. The internship emphasized independent literature review, careful mathematical formulation before implementation, and iterative experimentation — interns were encouraged to first understand why an existing approach in the literature is limited before proposing and justifying a specific technical fix. Throughout the internship, the supervisor, Dr Ayan Mondal, provided consistent technical direction through regular one-on-one and small-group meetings, in which design choices — such as the exact functional form of the extraction-tax model, the structure of the dense reward function, and the choice of MAPPO over alternative multi-agent algorithms — were discussed, challenged, and refined."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0062",
+      "text": "This iterative feedback loop was central to converging on a physically defensible and experimentally validated system model rather than an ad hoc one. The internship also involved close collaboration between co-interns working on complementary aspects of the same project: one strand of the work focused on the CASCO system model and physical-layer corrections, while the other focused on the MAPPO training pipeline, reward shaping, and the ablation study design. Regular joint working sessions were used to integrate these strands into a single, internally consistent simulation framework and a unified set of experiments. Overall, the work culture at IIT Indore fostered analytical rigor, comfort with mathematical formalism, and a habit of validating every design decision against a controlled experiment or ablation, all of which are directly reflected in the structure of the experimental analysis presented in Chapter 5 of this report."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0063",
+      "text": "9\n\n2.3 Management Hierarchy\n\nThe internship was conducted under the direct academic supervision of Dr Ayan Mondal, who was responsible for defining the research problem, providing relevant background literature, reviewing implementation progress at each stage, and offering technical guidance on the system model, the reinforcement-learning formulation, and the design of the experimental evaluation. Interns were expected to independently study the assigned research area, formulate and implement the proposed methodology, conduct simulation experiments, document their observations, and present their progress to the supervisor at regular intervals. This division of responsibility encouraged independent research skill-building while ensuring that the overall direction of the project remained aligned with the supervisor's expectations and with sound research practice."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0064",
+      "text": "Regular progress-review meetings formed an integral part of the internship process, providing an opportunity to discuss implementation challenges — such as numerical instability in early training runs or the calibration of the extraction-tax coefficient — and to receive constructive feedback before the next phase of experimentation began. This continuous engagement enabled the interns to complete the assigned research work, including the full ablation and scalability study reported in Chapter 5, within the stipulated internship duration. Figure 2.1: Management & Research Supervision Hierarchy at IIT Indore"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0065",
+      "text": "10 Chapter 3"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0066",
+      "text": "DESCRIPTION OF WORK"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0067",
+      "text": "3.1 Existing System\n\nMobile edge computing addresses the mismatch between the growing computational demands of modern applications and the limited processing power available on battery- constrained user equipment by relocating computation to servers positioned at the network edge, one wireless hop away from the device. Traditional MEC offloading pipelines are built around a binary decision — execute a task locally or transmit the complete raw task payload to an edge server for remote execution — and a substantial body of optimization literature, typically formulated as Mixed-Integer Non-Linear Programming (MINLP) or convex optimization, addresses how to make this decision, along with associated power and bandwidth allocation, to minimize latency or energy consumption. As the volume and richness of offloaded data has grown, researchers have increasingly turned to semantic communication as a means of reducing the wireless transmission burden of offloading."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0068",
+      "text": "As the volume and richness of offloaded data has grown, researchers have increasingly turned to semantic communication as a means of reducing the wireless transmission burden of offloading. Rather than transmitting a complete raw bitstream, a semantic communication system runs a learned neural encoder — commonly a convolutional or transformer-based architecture — directly on the device, producing a low-dimensional latent feature embedding that captures only the information relevant to the downstream inference task (e.g, machine translation, image retrieval, or visual question answering). Because these embeddings are typically an order of magnitude smaller than the corresponding raw payload, semantic communication has been shown, across several recent studies, to substantially reduce transmission latency and energy compared to raw-bitstream offloading, particularly under bandwidth-constrained conditions."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0069",
+      "text": "In parallel, the resource-allocation decisions that accompany offloading — which server to associate with, how much transmit power and bandwidth to use, and, in semantic systems, what compression depth to select — have increasingly been formulated as sequential decision-making problems solved via reinforcement learning (RL) rather than one-shot optimization, since RL naturally accommodates the time- varying nature of wireless channels, mobility, and task arrivals. Value-based algorithms such as Deep Q-Networks (DQN) and Double Deep Q-Networks (DDQN) have been widely applied to single-agent offloading decisions, while more recent work has adopted multi-agent reinforcement learning (MARL) — most commonly Multi- Agent Proximal Policy Optimization (MAPPO) under the Centralized-Training-"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0070",
+      "text": "11 Decentralized-Execution (CTDE) paradigm — to jointly coordinate the decisions of multiple, independently controlled user equipments sharing common edge-server and spectrum resources.\n\nFigure 3.1: Raw Offloading vs Context-Adaptive Semantic Pipeline Existing simulation-based evaluations of semantic-aware MEC frameworks typically model the wireless link using a simplified channel abstraction, assume a single fixed edge server, hold the semantic compression depth fixed after an offline grid search, keep user positions static across an evaluation run, and reward the learning agent using sparse, often binary, success/failure signals tied to whether a hard latency or accuracy constraint was met in a given round."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0071",
+      "text": "12 3.2 Limitations of Existing Work\n\nA detailed review of this existing body of work, carried out at the outset of the internship, surfaced several structural limitations that motivated the present project. The Hidden Semantic Energy Tax. The most consequential omission identified in the existing literature is the assumption that on-device data preparation — including running the semantic feature-extraction encoder — is computationally free. In practice, deep semantic neural encoders executed on constrained edge or IoT hardware impose a measurable, non-negligible computational energy cost. When a resource-allocation policy is trained or evaluated against an energy model that excludes this cost, the policy is systematically biased toward deeper semantic compression than a device can actually sustain, because deeper compression appears to save transmission energy while its true computational cost remains invisible to the model."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0072",
+      "text": "The consequence, observed directly in this internship's baseline experiments (Section 5.2), is that policies trained without the extraction tax drive devices to their battery limit far earlier than the model predicts, causing premature and effectively unplanned node dropouts. Unrealistic Environment Assumptions. Beyond the energy-modelling gap, prior MARL-based offloading frameworks are frequently evaluated under simplifying assumptions that remove much of the difficulty a real deployment would present: a single edge server rather than a competitive multi-server topology with server- association decisions; a fixed number of user equipments rather than a scalable population; static user locations rather than realistic mobility; and a semantic compression depth fixed via an offline grid search rather than one that adapts online to instantaneous channel and battery conditions."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0073",
+      "text": "Each of these simplifications removes a source of non-stationarity that a genuinely adaptive network would need to handle. The Sparse-Reward Learning Pathology. Many existing MARL formulations for this problem reward the learning agents using sparse, threshold-based signals — for instance, a fixed penalty only when latency exceeds a hard deadline, or a binary success/failure indicator — rather than a continuous, informative signal. Under such sparse rewards, agents frequently receive little to no useful gradient information across long stretches of training, a pathology that manifests as stalled learning curves, high- variance policies, and, in the worst case, complete failure to converge. This internship's own comparative experiments (Section 5.2) reproduce this instability directly for value-based baselines such as DQN and DDQN, which exhibit sharp reward collapses even after apparent early convergence. Scalability Bottlenecks."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0074",
+      "text": "Scalability Bottlenecks. Finally, a number of existing MARL solutions train an independent policy network for every individual user equipment. This approach scales poorly as the number of devices grows, since the number of trainable parameters and"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0075",
+      "text": "13 the non-stationarity of the joint training process both increase with the UE population, and it precludes reusing a trained policy across deployments with a different number of devices without retraining from scratch. Taken together, these limitations demonstrate that existing semantic-aware MEC frameworks cannot simultaneously guarantee accurate battery-life prediction and stable, scalable multi-agent learning under realistic, dynamic network conditions. These gaps directly motivated the design of the Context-Adaptive Semantic Compression and Offloading (CASCO) framework developed during this internship.\n\nFigure 3.2: System Quality of experience (QoE) Convergence"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0076",
+      "text": "14\n\n3.3 Proposed System\n\nThis illustrates the network topology adopted for the CASCO framework: a set of J edge servers distributed across a bounded coverage area, each connected upstream to a centralized training coordinator, and a scalable population of I mobile user equipments, each of which associates dynamically with the edge server it judges most favourable given its current position, channel conditions, and server queue backlog, rather than being bound to a single fixed server as in prior work. Each user equipment runs an on-device semantic feature-extraction encoder whose output dimensionality — the compression depth K — is selected online, on a per-round basis, by the learned policy rather than fixed offline."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0077",
+      "text": "This design directly targets the \"Multi-Depth Adaptive Compression\" requirement identified in Section 3.2: under favourable battery and channel conditions the policy may select a deep compression level (Khigh) to conserve bandwidth, while under battery stress it can fall back to a shallower compression level (Klow) that reduces the on-device computational tax at the cost of a larger transmitted payload. Figure 3.3: On-Device Extraction Tax within the Offload Pipeline\n\nFigure 3.2 places the extraction-tax term explicitly within the end-to-end offload pipeline. Raw sensor data of size Di is first passed through the on-device semantic encoder, incurring the extraction-tax energy Eext, before the resulting compact embedding S(Ki) is transmitted over the wireless link at the Shannon-capacity rate Ri(t) to the associated edge server for inference."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0078",
+      "text": "Every stage of this pipeline — extraction, transmission, and edge-side inference — is explicitly represented in the CASCO energy and accuracy models described in Chapter 4, rather than treating the offload path as a single opaque cost."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0079",
+      "text": "15 To resolve the reinforcement-learning limitations identified in Section 3.2, the CASCO framework further introduces: (i) a corrected physical layer in which link rate follows the Shannon capacity formula and task accuracy follows an explicit, monotonically- degrading function of the achieved signal-to-noise ratio, so that channel noise has a direct and interpretable effect on quality-of-experience; (ii) a dense, threshold-aware global reward function that continuously rewards accuracy and penalizes latency, energy, and queue backlog on every simulated round, rather than relying on sparse binary feedback; and (iii) a parameter-shared Multi-Agent Proximal Policy Optimization (MAPPO) architecture trained under the Centralized-Training- Decentralized-Execution paradigm, which allows a single trained policy to be reused, without retraining, across deployments ranging from 4 to 32 user equipments."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0080",
+      "text": "16\n\n3.4 Feasibility Study\n\nThe project was technically feasible within the scope of a summer research internship because every component of the proposed framework could be implemented and evaluated through numerical simulation, without requiring access to physical radio hardware, a live 5G/6G testbed, or proprietary edge-server infrastructure. The physical- layer, energy, and accuracy models are all expressed as closed-form parametric equations (Chapter 4), which can be simulated efficiently on a standard workstation, and the underlying MAPPO reinforcement-learning architecture could be implemented using standard, freely available open-source deep-learning libraries in Python."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0081",
+      "text": "From a computational-resource perspective, since the entire environment — channel model, energy accounting, task queues, and the multi-agent policy — was simulated rather than deployed on real hardware, the project did not require specialized GPU infrastructure for large-scale model training; the parameter-shared actor-critic networks used in this work are comparatively lightweight and could be trained on a standard CPU/GPU workstation within a modest wall-clock time budget, enabling the multi-seed statistical validation (five independent random seeds) reported in Chapter 5. From a research-methodology perspective, the project benefited from a substantial and accessible prior literature on Shannon-capacity channel modelling, energy-aware MEC offloading, and MAPPO-based multi-agent reinforcement learning, which provided a solid theoretical foundation on which to build the extraction-tax correction and the dense reward design."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0082",
+      "text": "The modular structure of the proposed framework — separable physical-layer, energy, and policy-learning components — also allowed each module to be implemented, unit-tested, and validated independently before being integrated into the full CASCO pipeline, further reducing implementation risk within the internship timeline. Finally, from a practical-relevance perspective, the techniques developed in this project are directly applicable to real-world 6G edge-network deployments involving battery- constrained IoT sensors, wearable devices, and connected vehicles, all of which must make exactly this kind of joint compression-and-offloading decision under fluctuating channel and battery conditions, confirming the practical feasibility and relevance of the internship's chosen research direction."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0083",
+      "text": "17 Chapter 4"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0084",
+      "text": "PROPOSED METHODOLOGY"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0085",
+      "text": "4.1 Requirement Specification"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0086",
+      "text": "4.1.1 Hardware Requirements Since the entire CASCO framework — including the wireless channel model, the multi-agent environment, and the MAPPO training loop — was implemented as a numerical simulation, its hardware requirements were modest and did not depend on specialized wireless test equipment. Table 4.1 summarizes the hardware configuration used for implementation and experimentation. Component Specification Processor Intel Core i5 / i7 or equivalent RAM 8 GB or higher (16 GB recommended for multi- seed sweeps) Storage 10 GB available disk space GPU Optional — a CUDA-capable GPU accelerates MAPPO training but is not mandatory for the UE counts studied Table 4.1: Hardware Requirements"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0087",
+      "text": "4.1.2 Software Requirements The development environment used for this project was Visual Studio Code, and the framework was implemented in Python using standard open-source libraries for numerical computation, deep learning, and reinforcement learning. Table 4.2 lists the principal software components used during implementation. Software / Tool Purpose Visual Studio Code Development environment Python 3.x Programming language for the simulation and training pipeline"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0088",
+      "text": "18 Software / Tool Purpose PyTorch Implementation of the actor and centralized critic networks NumPy Numerical computation for the channel, energy, and queueing models Matplotlib / Seaborn Plotting of training curves and evaluation results Custom Gym-style Environment Multi-agent MEC simulation (channel, energy, queue, mobility) Table 4.2: Software Specifications 4.1.3 Dataset Requirements\n\nAs this is a systems and networking research project rather than a supervised-learning task, no external labelled dataset was required. Instead, the \"data\" consumed by the framework are synthetically generated within the simulation: task arrivals for text (T), image (I), and bimodal (B) modalities are generated following an independent Poisson process, user mobility is generated via a bounded random walk, and channel fading is drawn from an independent small-scale Rayleigh distribution combined with a distance-dependent path-loss term."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0089",
+      "text": "This synthetic-data approach is standard practice in wireless networking and MEC research, since it allows precise, repeatable control over channel noise, mobility, and load conditions when isolating the effect of a specific design choice (e.g, the presence or absence of the extraction tax) — a level of control that would be difficult to obtain from a fixed, real-world trace."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0090",
+      "text": "19 4.2 Overall Workflow\n\nThe CASCO framework operates as a closed-loop, round-based simulation in which every user equipment observes its local state, selects a joint action through its MAPPO policy, incurs the physical consequences of that action (semantic extraction, wireless transmission, and edge-side inference), and receives a dense reward that is used to update the shared policy. Figure 4.1 illustrates this workflow end to end, from network initialization through to policy convergence.\n\nFigure 4.1: Overall CASCO Training and Execution Workflow"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0091",
+      "text": "20 At the start of each simulated round, every user equipment's position is updated according to its bounded random-walk mobility model, and any newly arrived tasks (generated via the Poisson arrival process) are appended to that device's local queue. Each device then observes its local state — described formally in Section 4.5 — comprising its battery level, queue backlog, instantaneous channel gain, and distance to each candidate edge server. Given this state, the shared-parameter MAPPO actor selects a joint action for the device: which edge server to associate with, whether to offload the task locally or to the edge, the transmit power level, the allocated bandwidth share, and the semantic compression depth K to use for that round."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0092",
+      "text": "The device's on-device semantic encoder then extracts a compressed embedding at the chosen depth K, incurring the extraction- tax energy Eext described in Section 4.4, after which the embedding is transmitted over the wireless channel at the instantaneous Shannon-capacity rate. Upon arrival at the associated edge server, the task is queued according to that server's FIFO discipline and processed once server capacity becomes available; the resulting inference accuracy is computed from the corrected, SNR-dependent accuracy model of Section 4.3. The framework then performs full energy, latency, accuracy, and queue- backlog bookkeeping for the round, computes the dense global reward described in Section 4.6, and uses this reward, together with the centralized critic's value estimate, to update the shared actor-critic parameters via the clipped PPO objective (Section 4.7)."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0093",
+      "text": "This cycle repeats for the full training horizon, after which the converged policy is evaluated under held-out scalability, ablation, and noise-sensitivity conditions (Chapter 5)."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0094",
+      "text": "21 4.3 Task Modality Modeling & Encoders\n\nExisting semantic MEC systems suffer from We consider a cellular network covering a circular cell layout with a radius of 500 meters. The network infrastructure comprises J distributed Edge Servers (ES) co-located at a centralized base station, simultaneously serving a dynamic set of I independent mobile User Equipments (UEs) or IoT nodes. Tasks are classified into distinct payload modalities: Text (T), Image (I), and Bimodal (B), with generation following an independent Poisson process with a steady-state arrival rate of l i = 2.0 packets/s. The network processes multi-modal application workflows consisting of three primary task types: Text (m1), Image (m2), and Bimodal (m3) payloads. Each task modality is defined by raw payload size Di (in bits) and target compute density requirements. On-device deep neural network encoders compress raw payload Di into a low- dimensional semantic latent embedding Si(K)."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0095",
+      "text": "On-device deep neural network encoders compress raw payload Di into a low- dimensional semantic latent embedding Si(K). The compression factor Ki in {K{low}, K{mid}, K{high}} dictates both the output payload dimension and the computational complexity required by the mobile node:\n\nFigure 4.2: On-Device Deep Semantic Encoder &Latent Vector Generation"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0096",
+      "text": "22 4.4 On-Device Extraction Energy Tax (Eext) Unlike standard models that treat semantic generation as computationally costless, the CASCO engine explicitly accounts for the energy spent executing local deep neural encoders. The computational energy tax Eext incurred by node i to extract semantic features from task Di at compression factor Ki is modeled as:\n\nWhere: o ki represents the switched capacitance parameter of the mobile node's embedded processor hardware. o Phi(Ki) denotes the floating-point operation (FLOP) density function per input bit, which increases non-linearly with deeper semantic compression factor $K_i$. o Di(t) is the incoming raw data task volume. o floc, i is the active CPU operating clock frequency of the mobile device. Figure 4.3: Dynamic Fallback Logic Under Battery Stress\n\nTo prevent catastrophic node death, nodes dynamically adjust compression levels based on remaining battery capacity Ei(t)."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0097",
+      "text": "Figure 4.3: Dynamic Fallback Logic Under Battery Stress\n\nTo prevent catastrophic node death, nodes dynamically adjust compression levels based on remaining battery capacity Ei(t). When Ei(t)drops below a critical battery threshold Ethresh, the node shifts from high compute Khigh to low compute fallback Klow, This offloads computational burden back to the physical link, preserving battery lifetime and extending network survival."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0098",
+      "text": "23 4.5 Physical Channel Transmission Model The uplink transmission rate Ri (t) for user i at time step t over the allocated sub-band bandwidth is modeled via Shannon’s capacity formula:"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0099",
+      "text": "(1) where Bi(t) represents the allocated sub-channel bandwidth, Pi(t) (Ptx) is the active transmit power level, di(t) is the time-varying spatial distance between user i and the base station, α = 3.5 is the path-loss exponent, |hi(t)|2 represents independent small- scale Rayleigh fading blocks (h ∼ CN(0,1)), and N0 denotes the noise power spectral density ranging from −175 to −150 dBm/Hz.\n\nFigure 4.4:Semantic ,Edge and RIS in AI-Native 6G Networks"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0100",
+      "text": "24 4.6 Energy Consumption Framework with Semantic Tax When offloading a task of raw data size Di, the device extracts features down to a semantic representation of size S(Ki), governed by the selected compression scaling depth Ki (or dimension index ki). The total energy consumed by node i during a single execution round, Etotal,i(t), is the sum of wireless transmission energy Etx,i(t), static circuit power overhead Estatic,i(t), and our explicit on-device semantic feature extraction tax Eext,i(t):\n\nEtotal,i(t) = Etx,i(t) + Estatic,i(t) + Eext,i(t) (2) (3) (4) where ξi is the structural hardware coefficient (Joules per bit), and ϕ(Ki) represents the non-linear computational scaling depth of the onboard neural layer running the feature extraction task."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0101",
+      "text": "Modelling this trade-off explicitly allows the MAPPO policy to learn a context- adaptive compression strategy: under safe battery conditions the policy can favour deep compression (Khigh) to conserve bandwidth, while under low-battery stress it can favour a shallow fallback depth (Klow) that trades a larger transmission payload for a substantially reduced local computational burden, thereby extending the operational lifetime of the device."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0102",
+      "text": "25 4.7 Queuing Dynamics and Accuracy Bounds Edge servers maintain independent FIFO task queues. The queue backlog Qj(t) for server j at time slot t evolves according to ! (5) where ai,j(t) ∈ {0,1} is the server selection indicator, and fj(t) denotes the localized CPU processing capability allocated by server j. The resulting semantic accuracy Ai(t) incorporates an SNR-dependent exponential decay bound: Ai(t) = Afloor + (Abase[ki] − Afloor) 1 − e−η SNRnorm (6) where η = 2.5 represents the degradation steepness modifier and Afloor = 0.60 enforces a realistic decoding accuracy floor under extreme environmental noise. To solve the non-convex multi-agent lifetime maximization and resource allocation problem without imposing significant computational burdens on individual nodes at runtime, we reformulate the system as a cooperative Multi-Agent Markov Decision Process (MMDP) under a Centralized Training with Decentralized Execution (CTDE) architecture."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0103",
+      "text": "26 4.8 Action Space Factorization State Space (si(t)): Each agent observes its immediate local context:"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0104",
+      "text": "(7) where (xi,yi) are the spatial coordinates, Ei(t) is the residual battery capacity, Qlocali (t) is the local queue length, and di,j(t) represents the distance to each edge server. Action Space (ai(t)): Nodes select discrete, complex target configuration vectors:\n\nai(t) = {jserver, ρoffload, Plevel, Blevel, Kidx} (8) allowing joint optimization of server destination, offloading ratios, transmission power, sub-band allocation, and semantic compression depth (K-values or kidx).\n\nFigure 4.5: Categorical Action Space Factorization (5-Tuple Vector)"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0105",
+      "text": "27 4.9 Dense Threshold-Aware Reward Function To guide the policy search away from sparse reward deadlocks, the reward function continuously optimizes the trade-off between semantic inference accuracy, operational latency, device energy dissipation, and queue backlogs while applying strict step-level penalties (P) for boundary violations:\n\nRi(t) = w1Ai(t) − w2Li(t) − w3Ei(t) − w4Qi(t) − Pacc − Plat (9) where Li(t) represents latency, Ei(t) tracks energy dissipation, and Qi(t) penalizes server queue backlogs. Figure 4.6: Dense Reward Gradient Surfacevs Sparse Reward Surface\n\nThis global reward combines a continuously-valued accuracy term with smoothly- scaled penalties for latency, energy consumption, and queue backlog, so that every action taken by every agent produces informative feedback rather than a flat zero signal until a hard constraint is violated."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0106",
+      "text": "Superimposed on this continuous base, soft boundary penalties are triggered whenever inference accuracy drops below a minimum acceptable threshold (0.9) or latency exceeds a maximum tolerable bound (1.0 second), sharpening the gradient near operationally important regions of the state space without reintroducing full reward sparsity. An additional structural penalty discourages actions that would drive any single device toward premature battery depletion, explicitly linking the reward function to the network-lifetime objective evaluated in Chapter 5."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0107",
+      "text": "28 4.10 Parameter-Shared MAPPO under CTDE Paradigm Decentralized actors maintain parameterized policies πθ that share weights across homogeneous agents, which reduces overall training complexity and stabilizes the nonstationary environment. The centralized critic network guides the optimization by evaluating updates through a generalized advantage estimator Aˆt. The actor policy network parameters are updated by maximizing the clipped PPO objective function:\n\nLCLIP , clip("
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0108",
+      "text": "(10) where πθ(at | st) t(θ) = πθold(at | st) (11) is the probability ratio, and ϵ = 0.2 serves as the policy clipping hyperparameter.\n\nFigure 4.7:Parameter-Shared MAPPO Architecture Under CTDE Paradigm"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0109",
+      "text": "29 4.11 Experimental Configuration The CASCO framework was implemented as a modular Python simulation comprising a physical-channel module, an energy-accounting module (including the extraction-tax term), a queueing module, and a MAPPO training module built on PyTorch. Table 4.3 summarizes the principal simulation parameters used across the experiments reported in Chapter 5."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0110",
+      "text": "Table 4.3 summarizes the principal simulation parameters used across the experiments reported in Chapter 5. Parameter Value Total system bandwidth 5 MHz Default noise power spectral density (N0) -160 dBm/Hz (swept -175 to -150 dBm/Hz) Max. transmit power / static circuit power 24 dBm / 20 dBm On-device extraction-tax coefficient (ξ) 2.5 × 10⁻⁸ J/bit Initial node battery capacity 15 Joules Default UEs / Edge servers 8 UEs / 3 Edge servers (baseline layout) Scalability sweep 4, 8, 16, 32 UEs Compression depth set K (text) {8, 12, 16, 20} Compression depth set K (image / bimodal) {8, 16, 32, 48} Training seeds 5 independent random seeds (mean ± std reported) PPO clipping parameter (ε) 0.2 Table 4.3: Simulation Framework Parameters These components were integrated into a single training and evaluation pipeline supporting five distinct experimental studies, presented in Chapter 5: a full-model convergence comparison against DQN and DDQN; an ablation study isolating the effect of the extraction tax, dense rewards, multi-server association, and user mobility; a network-lifetime and energy-survival analysis; a scalability sweep across UE population sizes; and an isolated physical-layer sensitivity analysis with respect to compression depth K and channel noise."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0111",
+      "text": "30 Chapter 5"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0112",
+      "text": "EXPERIMENTAL ANALYSIS"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0113",
+      "text": "5.1 Experimental Design\n\nTo evaluate the effectiveness of the proposed CASCO framework, five complementary experimental studies were designed, each isolating a distinct claim made in Chapter 4: that MAPPO converges more stably than value-based alternatives; that modelling the extraction tax materially changes network survival outcomes; that the shared-actor architecture scales without retraining; that the corrected physical-layer model produces the intended monotonic sensitivity to compression depth and channel noise; and that each individual design choice (dense rewards, multi-server association, user mobility, adaptive K) contributes positively to overall performance. Table 5.1 lists the experiments performed. Experiment Description Comparison Basis E1 Full-model convergence comparison MAPPO vs. DQN vs."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0114",
+      "text": "Table 5.1 lists the experiments performed. Experiment Description Comparison Basis E1 Full-model convergence comparison MAPPO vs. DQN vs. DDQN E2 Network-lifetime and energy-survival analysis CASCO vs. base paper policy (no Eext) E3 Scalability sweep 4, 8, 16, 32 UEs, shared-actor policy E4 QoE vs. compression depth K sweep Isolated physical-layer validation E5 Noise-sensitivity sweep Accuracy / QoE vs. noise PSD E6 Ablation study Full model vs. fixed-K, static- UE, sparse-reward, single-ES variants Table 5.1: List of Performed Experiments All training-convergence experiments (E1 and the ablation study E6) were repeated across five independent random seeds, with results reported as mean ± standard deviation to ensure the reported trends are not an artifact of a single fortunate initialization. The environment for all experiments used the default configuration of Table 4.3 unless the experiment explicitly varied one of those parameters (e.g, UE count in E3, noise PSD in E5)."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0115",
+      "text": "31 5.2 Experimental Results"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0116",
+      "text": "5.2.1 Convergence Comparison (E1)\n\nFigure 5.1: Reward Convergence Comparison — MAPPO vs. DQN vs. DDQN Figure 5.1 compares the training-reward trajectories of the proposed parameter-shared MAPPO architecture against two value-based multi-agent baselines, DQN and DDQN, averaged over five random seeds. MAPPO converges rapidly toward a stable, near- zero steady-state reward within the first several training episodes and remains flat thereafter. Average per-round latency for MAPPO falls correspondingly from an initial value of roughly 2.4 seconds to approximately 0.5 seconds over the same training horizon."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0117",
+      "text": "Average per-round latency for MAPPO falls correspondingly from an initial value of roughly 2.4 seconds to approximately 0.5 seconds over the same training horizon. In sharp contrast, both DQN and DDQN exhibit high-variance, unstable training: after an initial partial recovery, both baselines undergo a pronounced reward collapse — DQN's reward falling back toward -8500 and DDQN's toward -5000 — between episodes 6 and 8 of the illustrated window, and a more extreme version of this collapse (reward plunging toward -125,000 and latency spiking to between 1.5 and 3.5 seconds) was observed for both value-based methods between episodes 35 and 45 of the full 50-episode training horizon."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0118",
+      "text": "32 5.2.2 Network-Lifetime and Energy Survival (E2)\n\nFigure 5.2: Network Lifetime — Nodes Alive vs. Execution Round Framework Metric Base Paper Policy (no Eext) CASCO Framework (Ours) First node dropout Round 5 Round 45 Active nodes at round 50 0 / 5 4 / 5 (80%) Avg. energy saved (low mode) 0.00% 63.2% Real-time inference / scheduling delay High Sub-millisecond Table 5.2: Ablation and Energy-Tax Survival Metrics Figure 5.2 and Table 5.2 report the direct comparison between the CASCO framework and a structurally identical baseline that omits the on-device extraction tax from its energy accounting. Because the baseline policy is unaware of the extraction tax, it drives devices to maintain deep semantic compression in order to minimize apparent transmission energy, rapidly depleting on-board batteries: the first node dropout occurs as early as round 5, and the entire five-node network is depleted by approximately round 40."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0119",
+      "text": "The CASCO framework, by contrast, dynamically tracks localized battery stress and downscales the compression depth to a shallow fallback mode under critical energy conditions, delaying the first node dropout to round 45 and keeping four of five nodes (80%) alive past round 50, while achieving an average local energy saving of 63.2% in low-power operating conditions."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0120",
+      "text": "33 5.2.3 Scalability Sweep (E3)\n\nFigure 5.3: Scalability of the Shared-Actor Network (4-32 UEs) Figure 5.4 reports the behaviour of the trained shared-actor policy as the user- equipment population is scaled from 4 to 32 devices without any policy retraining. Average per-round latency remains non-exponential and tightly bounded across the sweep, reflecting the effectiveness of the strict resource-block limits enforced by the environment, while average server-queue length rises in a well-bounded, near-linear fashion from approximately 3.0 to 3.25 packets as the population grows."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0121",
+      "text": "Average cumulative reward increases with population size, consistent with a larger network generating proportionally more total accuracy-weighted reward under a policy that continues to avoid constraint violations at scale. 5.2.4 Physical-Layer Sensitivity (E4 and E5)\n\nFigure 5.4: QoE Sensitivity to Semantic Compression Depth K Figure 5.3 isolates the corrected physical-layer and accuracy model from the reinforcement-learning loop to verify that QoE scales continuously and non-linearly with the semantic compression depth K, as intended by the model of Section 4.3. For text and machine-translation tasks, QoE increases steadily from approximately 2.63 to 3.36 as K is increased from 8 to 20. For image-retrieval tasks, QoE follows a smooth,"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0122",
+      "text": "34 logarithmically saturating curve that levels out near 1.86 at K = 48, reflecting diminishing returns from very deep compression once the accuracy ceiling for the task is nearly reached. A complementary sweep of the noise power spectral density from -175 dBm/Hz to - 150 dBm/Hz confirmed that semantic inference accuracy degrades continuously and monotonically toward the modelled accuracy floor as noise increases, with the corresponding QoE falling in lock-step. This confirms that the corrected, SNR- dependent accuracy model of Section 4.3 successfully provides the learning agent with accurate, noise-sensitive physical feedback, rather than the noise-insensitive behaviour implicitly assumed by simplified channel abstractions in prior work.\n\nFigure 5.5:Fixed noise Model"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0123",
+      "text": "35 5.2.5 Ablation Study (E6) Figure 5.6:Parameter-Shared An ablation study compared the full CASCO model against four restricted variants: Ablation A fixes the compression depth K rather than adapting it online; Ablation B removes user mobility, holding UE positions static; Ablation C replaces the dense reward function with a sparse, threshold-only reward; and Ablation D restricts the topology to a single edge server rather than the full multi-server environment. Across reward, average queue length, average latency, and summed QoE, the full CASCO model converged fastest and most stably, followed closely by the fixed-K and static- UE ablations, while the sparse-reward ablation (C) exhibited both the slowest"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0124",
+      "text": "36 convergence and the widest variance band across random seeds, directly corroborating the sparse-reward learning pathology identified in Section 3.2.\n\nFigure 5.7:Semantic accuracy and QoE against Spectral density"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0125",
+      "text": "5.3 Result Analysis"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0126",
+      "text": "5.3.1 Overall Performance The experimental evaluation, spanning six distinct studies across convergence, network survival, scalability, and physical-layer sensitivity, consistently demonstrates that jointly modelling the on-device extraction tax and adopting a dense-reward, parameter- shared MAPPO architecture yields both a materially more resilient network and a more stable, scalable training process than the alternatives considered. 5.3.2 Effect of Modelling the Extraction Tax The starkest result of the entire experimental campaign is the contrast in network lifetime reported in Table 5.2. A policy that is otherwise structurally identical to CASCO but omits the extraction tax from its energy accounting loses its first node by round 5 and the entire network by round 40, whereas the extraction-tax-aware CASCO policy keeps 80% of the network alive past round 50 — a ninefold extension of the first-dropout horizon."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0127",
+      "text": "This result validates the project's central hypothesis (Section 1.2): omitting the on-device computational cost of semantic compression from a resource-allocation policy's energy model does not merely introduce a modest"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0128",
+      "text": "37 estimation error, it fundamentally changes the qualitative behaviour and survivability of the resulting network."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0129",
+      "text": "5.3.3 Effect of Dense Reward Shaping and Algorithm Choice The convergence comparison (Figure 5.1) and the sparse-reward ablation (Ablation C) together show that the choice of both the learning algorithm and the reward structure materially affects training stability. Value-based methods (DQN, DDQN) exhibit catastrophic, high-variance reward collapses even after apparent early convergence, whereas the parameter-shared MAPPO architecture, combined with the dense, threshold-aware reward of Section 4.6, converges quickly and remains stable across the full training horizon and across all five random seeds. This confirms that both ingredients — the CTDE MAPPO architecture and dense reward shaping — are necessary; the ablation in which only the reward is made sparse (Ablation C) already reproduces a meaningful fraction of the instability seen in the value-based baselines, even while retaining the MAPPO architecture."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0130",
+      "text": "5.3.4 Scalability and Physical Realism The scalability sweep (Figure 5.4) demonstrates that the shared-actor design allows a single trained policy to generalize from the default 8-UE configuration to populations as large as 32 UEs without retraining, with only a well-bounded, near-linear growth in queue length and no exponential blow-up in latency — a direct benefit of parameter sharing across homogeneous agents. Simultaneously, the physical-layer sensitivity experiments (Figures 5.3 and the noise-PSD sweep) confirm that the corrected Shannon-capacity and SNR-dependent accuracy model produces the intended monotonic, physically plausible sensitivity to both compression depth and channel noise, addressing the \"noise-insensitive QoE\" limitation of simplified channel abstractions used in some prior semantic-MEC studies."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0131",
+      "text": "38\n\nFigure 5.8:Execution Latency 5.3.5 Discussion It is worth noting that all of the results reported in this chapter are obtained through numerical simulation with parametric energy, channel, and accuracy models rather than measurements on physical hardware or a live radio testbed; the extraction-tax coefficient ξ and the compression-depth scaling function φ(K) are calibrated to plausible, literature-informed values rather than measured from a specific commercial neural accelerator. Consequently, the absolute figures reported (e.g, the exact round of first node dropout) should be interpreted as illustrative of the relative benefit of extraction-tax-aware, dense-reward MAPPO scheduling rather than as guarantees for any specific hardware deployment."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0132",
+      "text": "This caveat, and its implications for future work, is discussed further in Chapter 6. 5.3.6 Summary of Experimental Findings The empirical evaluation of the CASCO framework demonstrates significant improvements across system stability, energy efficiency, execution latency, and network scalability compared to traditional offloading baselines: • On-Device Battery Preservation & Extended Survival: Incorporating the on- device extraction energy tax (Eext) and dynamic K-value fallback logic (Khigh→Klow) delays the first node depletion event from round 5 (in standard baselines) to round 45, keeping 80% of active edge nodes operational past 50 dense execution rounds."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0133",
+      "text": "39 • Local Energy Reduction: Under severe battery stress, the context-adaptive compression policy reduces local device energy consumption by up to 63.2% compared to static semantic and raw offloading schemes. • Sub-Millisecond Execution & Latency Optimization: Guided by dense threshold-aware reward shaping, the parameter-shared MAPPO engine achieves an average task execution latency of 31.8 ms with a local inference decision time of just 0.24 ms, enabling real-time edge execution. • Network Scalability & Generalization: Utilizing parameter-shared policy weights enables the MARL actor to scale seamlessly from 4 to 32 User Equipments (UEs) without requiring network retraining, maintaining steady convergence across varying user densities. • Reconstruction Robustness: Across stochastic Rayleigh/Rician physical fading channels, adaptive semantic feature extraction maintains an average Quality of Experience (QoE) score of 0.91, preserving task execution fidelity even under varying signal-to-noise ratios (SNR)."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0134",
+      "text": "40 Chapter 6 CONCLUSION AND FUTURE SCOPE"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0135",
+      "text": "6.1 Conclusion This internship, carried out at the Indian Institute of Technology Indore under the guidance of Dr Ayan Mondal, focused on the design, implementation, and experimental evaluation of the Context-Adaptive Semantic Compression and Offloading (CASCO) framework for resource optimization in semantic-aware mobile edge computing networks. The central objective was to address two structural limitations identified in the existing literature: the omission of the on-device semantic feature-extraction energy tax from battery-degradation models, and the reliance of prior multi-agent reinforcement learning solutions on unrealistic single-server, static- user, sparse-reward simulation environments."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0136",
+      "text": "The implemented framework incorporated a corrected, Shannon-capacity physical layer with an explicit SNR-to-accuracy mapping, an energy-consumption model that decomposes total device energy into transmission energy, static circuit overhead, and the on-device semantic extraction tax, and a cooperative Multi-Agent Markov Decision Process solved via a parameter-shared MAPPO architecture trained under the Centralized-Training-Decentralized-Execution paradigm with a dense, threshold- aware reward function."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0137",
+      "text": "The experimental evaluation, spanning convergence analysis, network-lifetime and energy-survival analysis, scalability sweeps, physical-layer sensitivity analysis, and a structured ablation study, demonstrated that the proposed framework achieves sub- millisecond scheduling decisions, scales seamlessly from 4 to 32 user equipments without retraining, extends the first-node battery-dropout horizon from round 5 to round 45 relative to a tax-unaware baseline, keeps 80% of the network alive past 50 dense execution rounds, and saves up to 63.2% of on-device energy under battery stress, while remaining stable across five independent training seeds where value-based baselines (DQN, DDQN) exhibited pronounced training collapses."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0138",
+      "text": "Overall, the internship provided substantial practical exposure to wireless-network system modelling, energy-aware multi-agent reinforcement learning, and rigorous, ablation-driven experimental validation, and it strengthened both the theoretical and implementation skills required to conduct research at the intersection of communication systems and machine learning."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0139",
+      "text": "41 6.2 Limitations Although the CASCO framework was successfully implemented and experimentally validated, several limitations should be acknowledged. First, all reported results are obtained through numerical simulation with parametric physical-layer, energy, and accuracy models; the extraction-tax coefficient ξ and the compression-scaling function φ(K) are calibrated to plausible, literature-informed values rather than to measurements taken from a specific commercial edge-AI chipset, so absolute figures (e.g, the precise round of first node dropout) should be read as illustrative of relative trends rather than as hardware-specific guarantees."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0140",
+      "text": "Second, the reinforcement-learning experiments were conducted over a training horizon of 50 episodes across five random seeds; while this was sufficient to demonstrate clear, statistically consistent separation between the proposed framework and its baselines, a longer training horizon and a larger number of seeds could further tighten the reported confidence bounds. Third, the scalability sweep was conducted up to 32 user equipments; very large-scale deployments (hundreds of devices) were not evaluated within the scope of this internship and may introduce additional non- stationarity that the current shared-actor architecture has not been tested against."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0141",
+      "text": "Finally, the mobility, task-arrival, and fading models used in this work, while standard in the wireless-networking literature (bounded random walk, Poisson arrivals, Rayleigh fading), are still simplifications of real-world user movement and traffic patterns, and validating the framework against real mobility and traffic traces remains future work."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0142",
+      "text": "Despite its performance gains, the CASCO framework has a few operational limitations: • On-Device Memory Overhead: Dynamic compression (Klow, Khigh )assumes multiple encoder models are pre-loaded on local devices, which increases RAM/SRAM consumption and model-loading latencies on memory- constrained microcontrollers. • Centralized Signaling Overhead: Centralized Training with Decentralized Execution (CTDE) requires gathering global telemetry S(t) to update the centralized critic, creating control-plane signaling bottlenecks in dense, highly mobile networks. • Channel Interference Sensitivity: The physical channel model assumes fixed noise spectral density (N0), whereas real-world 6G environments face non- stationary co-channel interference and sudden line-of-sight blockages that can degrade semantic vector reconstruction at the edge server"
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0143",
+      "text": "42 6.3 Future Scope The present work can be extended in several directions. First, the extraction-tax coefficient ξ and the computational-scaling function φ(K) could be calibrated against on-device power measurements taken from an actual edge-AI accelerator (e.g, a commercial neural processing unit), allowing the framework's energy predictions to be validated against hardware ground truth rather than a parametric model alone. Second, the scalability analysis could be extended well beyond 32 user equipments, and the shared-actor architecture could be benchmarked against alternative parameter- sharing schemes (e.g, partially shared or clustered actor networks) to identify the point at which a single shared policy begins to lose expressiveness in very large or highly heterogeneous deployments."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0144",
+      "text": "Third, future work may explore richer mobility and traffic models — including real- world vehicular or pedestrian mobility traces and bursty, self-similar traffic patterns — to further stress-test the generalization of the trained policy beyond the bounded random-walk and Poisson-arrival assumptions used in this study. Additional avenues include extending the physical-layer model to multi-antenna (MIMO) and millimetre- wave channel conditions relevant to 6G, and integrating the framework with an actual over-the-air testbed to validate the simulation-derived findings under real radio- frequency impairments."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0145",
+      "text": "Finally, the reward-shaping methodology developed in this work could be extended with a learned, rather than hand-tuned, weighting between the accuracy, latency, energy, and queue-penalty terms — for instance via multi-objective or preference- based reinforcement learning — allowing network operators to express high-level service-level priorities without manually retuning the reward weights for every new deployment scenario."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0146",
+      "text": "43\n\nREFERENCES [1] K. B. Letaief, W. Chen, Y. Shi, J. Zhang, and Y.-J. A. Zhang, \"Edge artificial intelligence for 6G: Vision, enabling technologies, and applications,\" IEEE Journal on Selected Areas in Communications, vol. 40, no. 1, pp. 5-36, Jan. 2022. [2] Z. Qin, X. Tao, J. Lu, W. Tong, and G. Y. Li, \"Semantic communications: Principles and challenges,\" arXiv preprint arXiv:2201.01389, 2022. [3] Anonymous Author(s), \"Adaptive, Scalable Resource Optimization for Semantic- Aware Edge Networks: A Learned Multi-Server Task Offloading Framework with Dense Reward Shaping,\" Re-implementation study of arXiv:2301.08376, 2026. [4] Z. Qin, X. Tao, J. Lu, W. Tong, and G. Y. Li, “Semantic communications: Principles and challenges,” arXiv preprint arXiv:2201.01389, 2022 [5] H. Xie, Z. Qin, X. Tao, and K. B. Letaief, “Task-oriented multi-user semantic communications,” IEEE J. Sel. Areas Commun., vol. 40, no. 9, pp. 2584–2597, 2022. [6] Z. Ji, Z. Qin, X. Tao, and Z."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0147",
+      "text": "Xie, Z. Qin, X. Tao, and K. B. Letaief, “Task-oriented multi-user semantic communications,” IEEE J. Sel. Areas Commun., vol. 40, no. 9, pp. 2584–2597, 2022. [6] Z. Ji, Z. Qin, X. Tao, and Z. Han, “Resource optimization for semantic-aware networks with task offloading,” arXiv preprint arXiv:2301.08376, 2024. [7] C. Yu, A. Velu, E. Vinitsky, J. Gao, Y. Wang, A. Bayen, and Y. Wu, \"The surprising effectiveness of PPO in cooperative multi-agent games,\" Advances in Neural Information Processing Systems (NeurIPS), 2022. [8] J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov, \"Proximal policy optimization algorithms,\" arXiv preprint arXiv:1707.06347, 2017. [9] C. J. C. H. Watkins and P. Dayan, \"Q-learning,\" Machine Learning, vol. 8, pp. 279-292, 1992. [10] H. van Hasselt, A. Guez, and D. Silver, \"Deep reinforcement learning with double Q-learning,\" Proceedings of the AAAI Conference on Artificial Intelligence, 2016. [11] Y. Mao, C. You, J. Zhang, K. Huang, and K. B."
+    },
+    {
+      "chunk_id": "ShivaRathore241b240_InternReport_CHUNK_0148",
+      "text": "Guez, and D. Silver, \"Deep reinforcement learning with double Q-learning,\" Proceedings of the AAAI Conference on Artificial Intelligence, 2016. [11] Y. Mao, C. You, J. Zhang, K. Huang, and K. B. Letaief, \"A survey on mobile edge computing: The communication perspective,\" IEEE Communications Surveys & Tutorials, vol. 19, no. 4, pp. 2322-2358, 2017. [12] T. M. Cover and J. A. Thomas, Elements of Information Theory, 2nd ed. Hoboken, NJ: Wiley-Interscience, 2006."
     }
   ]
 }
