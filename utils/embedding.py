@@ -19,8 +19,20 @@ def embed_texts(texts, prefix="search_document: "):
         return []
     client = ollama.Client(host="http://127.0.0.1:11434")
     prefixed = [prefix + t for t in texts]
-    response = client.embed(model=EMBED_MODEL, input=prefixed)
+    try:
+        response = client.embed(model=EMBED_MODEL, input=prefixed)
+    except Exception as exc:
+        raise RuntimeError(
+            f"Ollama embedding failed for model '{EMBED_MODEL}'. "
+            "Make sure Ollama is installed correctly, running, and the model is available. "
+            f"Original error: {exc}"
+        ) from exc
     embeddings = response.embeddings if hasattr(response, "embeddings") else response.get("embeddings", [])
+    if not embeddings:
+        raise RuntimeError(
+            f"Ollama returned no embeddings for model '{EMBED_MODEL}'. "
+            "Run 'ollama pull nomic-embed-text' and try again."
+        )
     return [list(map(float, e)) for e in embeddings]
 
 

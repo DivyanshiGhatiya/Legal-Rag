@@ -1,46 +1,33 @@
-<<<<<<< Updated upstream
-
-"""
-Legal RAG prototype:
-- Sidebar with title/description.
-- PDF upload (multiple) → validation → extraction → cleaning → saving.
-- Hierarchical chunking of the cleaned text → preview + metadata → saved JSON.
-- Local embedding with Ollama and storage in ChromaDB.
-- Hybrid retrieval (dense + BM25 + RRF fusion + cross-encoder rerank) demo.
-=======
 """Backend controller for the Legal RAG application.
-The Streamlit frontend imports this module as its application API. Keeping
-the pipeline here makes ingestion and question answering reusable from other
-frontends and gives the UI one consistent error/result contract.
->>>>>>> Stashed changes
+
+The Streamlit frontend imports this module as its application API. Pipeline
+execution and backend error handling stay here so the UI only renders results.
 """
 
+import json
 import os
 from typing import Any, Dict, List, Optional
 
 from utils.chunker import create_chunks_hierarchical, save_chunked
-from utils.pdf_processor import (
-    validate_pdf,
-    extract_text_and_metadata,
-    clean_text,
-    save_processed,
-)
 from utils.embedding import (
+    DEFAULT_COLLECTION_NAME,
+    DEFAULT_PERSIST_DIR,
     compute_file_hash,
     document_already_embedded,
     embed_chunks,
-    save_index_manifest,
     get_collection,
-    DEFAULT_COLLECTION_NAME,
-    DEFAULT_PERSIST_DIR,
+    save_index_manifest,
+)
+from utils.generation import generate_answer
+from utils.pdf_processor import (
+    clean_text,
+    extract_text_and_metadata,
+    save_processed,
+    validate_pdf,
 )
 from utils.retrieval import refresh_corpus_cache, retrieve
-from utils.generation import generate_answer
-from utils.query_rewriter import rewrite_query
 
-# ----------------------------------------------------------------------
-# Page configuration
-# ----------------------------------------------------------------------
+
 UPLOAD_DIR = os.path.join("data", "uploads")
 PROCESSED_DIR = "processed_data"
 CHUNKED_DIR = "chunked_data"
@@ -57,11 +44,7 @@ def _error_result(message: str, stage: str, **extra: Any) -> Dict[str, Any]:
 
 
 def process_document(file_name: str, file_bytes: bytes) -> Dict[str, Any]:
-    """Validate, persist, chunk, and embed one uploaded PDF.
-
-    All pipeline work belongs here; the returned dictionary is safe for a UI
-    to render even when an individual stage fails.
-    """
+    """Validate, persist, chunk, and embed one uploaded PDF."""
     result: Dict[str, Any] = {
         "success": False,
         "error": None,
@@ -162,6 +145,7 @@ def query_legal_documents(
     section_filter: Optional[str] = None,
     top_n_final: int = 5,
     use_reranker: bool = True,
+    conversation_history: Optional[List[Dict[str, str]]] = None,
 ) -> Dict[str, Any]:
     """Run retrieval and answer generation, returning one structured result."""
     base = {"query": query, "hits": [], "answer": None}
@@ -191,39 +175,17 @@ def query_legal_documents(
         return base
 
     try:
-        base["answer"] = generate_answer(query, base["hits"])
+        # Generation receives history only to resolve references; retrieval stays document-grounded.
+        base["answer"] = generate_answer(
+            query,
+            base["hits"],
+            conversation_history=conversation_history,
+        )
     except Exception as exc:
         return _error_result(str(exc), "generation", **base)
 
-<<<<<<< Updated upstream
-if "chat_messages" not in st.session_state:
-    st.session_state.chat_messages = []
-
-if st.button("🧹 New conversation"):
-    st.session_state.chat_messages = []
-    st.rerun()
-
-for message in st.session_state.chat_messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-
-# Try to list already-indexed documents for the dropdown
-available_docs = []
-try:
-    if os.path.isdir(PERSIST_DIR):
-        coll = get_collection(collection_name=COLLECTION, persist_dir=PERSIST_DIR)
-        all_meta = coll.get(include=["metadatas"])
-        available_docs = sorted({
-            m.get("source_name")
-            for m in (all_meta.get("metadatas") or [])
-            if m and m.get("source_name")
-        })
-except Exception:
-    available_docs = []
-=======
     base["success"] = True
     return base
->>>>>>> Stashed changes
 
 
 def list_indexed_documents() -> List[str]:
@@ -231,105 +193,61 @@ def list_indexed_documents() -> List[str]:
     try:
         collection = get_collection(DEFAULT_COLLECTION_NAME, DEFAULT_PERSIST_DIR)
         metadata = collection.get(include=["metadatas"]).get("metadatas") or []
-        return sorted({item.get("source_name") for item in metadata if item and item.get("source_name")})
+        return sorted(
+            {
+                item.get("source_name")
+                for item in metadata
+                if item and item.get("source_name")
+            }
+        )
     except Exception:
         return []
 
 
-<<<<<<< Updated upstream
-prompt = st.text_area(
-    "Type your legal question",
-    placeholder="Example: What are the termination clauses in this contract?",
-    height=120,
-)
+def remove_indexed_document(document_name: str) -> Dict[str, Any]:
+    """Delete every indexed chunk for a source document and refresh retrieval caches."""
+    if not document_name:
+        return {"success": False, "deleted_count": 0, "error": "Document name is required."}
 
-if st.button("🔍 Search"):
-    if not prompt or not prompt.strip():
-        st.warning("Please enter a question first.")
-    else:
-        conversation_history = list(st.session_state.chat_messages)
-        retrieval_query = rewrite_query(prompt, conversation_history)
-        st.session_state.chat_messages.append({"role": "user", "content": prompt})
+    try:
+        collection = get_collection(DEFAULT_COLLECTION_NAME, DEFAULT_PERSIST_DIR)
+        matching = collection.get(
+            where={"source_name": document_name},
+            include=["metadatas"],
+        )
+        chunk_ids = matching.get("ids") or []
+        if chunk_ids:
+            collection.delete(ids=chunk_ids)
 
-        with st.spinner("🔎 Running hybrid retrieval (dense + BM25 + RRF + rerank)…"):
-            try:
-                hits = retrieve(
-                    query=retrieval_query,
-                    collection_name=COLLECTION,
-                    persist_dir=PERSIST_DIR,
-                    document_filter=doc_filter,
-                    section_filter=section_filter,
-                    top_n_final=top_n_final,
-                    use_reranker=use_reranker,
-                )
-            except Exception as exc:
-                st.error(f"❌ Retrieval failed: {exc}")
-                hits = []
+        manifest_path = os.path.join(DEFAULT_PERSIST_DIR, "manifest.json")
+        if os.path.exists(manifest_path):
+            with open(manifest_path, "r", encoding="utf-8") as manifest_file:
+                manifest = json.load(manifest_file)
+            documents = manifest.get("documents", []) if isinstance(manifest, dict) else manifest
+            remaining = [
+                entry for entry in documents
+                if entry.get("source_name") != document_name
+            ]
+            with open(manifest_path, "w", encoding="utf-8") as manifest_file:
+                json.dump({"documents": remaining}, manifest_file, indent=2, ensure_ascii=False)
 
-        if not hits:
-            st.warning("No matching chunks found. Try uploading and embedding a document first.")
-        else:
-            st.success(f"✅ Found {len(hits)} relevant chunks")
+        refresh_corpus_cache(
+            collection_name=DEFAULT_COLLECTION_NAME,
+            persist_dir=DEFAULT_PERSIST_DIR,
+        )
+        return {"success": True, "deleted_count": len(chunk_ids), "error": None}
+    except Exception as exc:
+        return {"success": False, "deleted_count": 0, "error": str(exc)}
 
-            # ---------- Generation (Grok) ----------
-            with st.spinner("🧠 Generating answer from retrieved chunks…"):
-                try:
-                    gen_result = generate_answer(
-                        prompt,
-                        hits,
-                        conversation_history=conversation_history,
-                    )
-                except Exception as exc:
-                    gen_result = None
-                    st.error(f"❌ Answer generation failed: {exc}")
 
-            if gen_result:
-                st.session_state.chat_messages.append(
-                    {"role": "assistant", "content": gen_result["answer"]}
-                )
-                st.subheader("📝 Answer")
-                st.markdown(gen_result["answer"])
-                citation_report = gen_result.get("citation_report")
-                if citation_report:
-                    if citation_report["is_valid"]:
-                        st.success("✅ Citation verification passed")
-                    else:
-                        st.warning("⚠️ Citation verification found issues")
-                        for problem in citation_report["problems"]:
-                            st.caption(problem)
-                    if citation_report["citations"]:
-                        st.caption(
-                            "Verified chunks: "
-                            + ", ".join(f"`{cid}`" for cid in citation_report["citations"])
-                        )
-                st.markdown("---")
-
-            st.subheader("🔍 Retrieved Chunks")
-            for rank, hit in enumerate(hits, start=1):
-                score_label = (
-                    f"Rerank: {hit['rerank_score']:.3f}"
-                    if hit.get("rerank_score") is not None
-                    else f"RRF: {hit['rrf_score']:.4f}"
-                )
-                with st.expander(
-                    f"#{rank}  •  {score_label}  •  📄 {hit['document_name']}"
-                ):
-                    st.caption(f"**Chunk ID:** `{hit['chunk_id']}`")
-                    st.caption(f"**Section:** {hit['section'] or '(none)'} / {hit['subsection'] or '(none)'}")
-                    st.caption(f"**Hierarchy:** {hit['hierarchy'] or '(none)'}")
-                    st.caption(
-                        f"**Scores** — dense: {hit['dense_score']:.3f}"
-                        if hit.get("dense_score") is not None else "**Scores** — dense: n/a"
-                    )
-                    st.markdown("---")
-                    st.markdown(hit["text"])
-=======
 def get_corpus_metrics() -> Dict[str, Any]:
     """Return lightweight corpus metrics for dashboard cards."""
     try:
         collection = get_collection(DEFAULT_COLLECTION_NAME, DEFAULT_PERSIST_DIR)
-        count = collection.count()
-        return {"indexed_documents": len(list_indexed_documents()), "indexed_chunks": count, "error": None}
+        return {
+            "indexed_documents": len(list_indexed_documents()),
+            "indexed_chunks": collection.count(),
+            "error": None,
+        }
     except Exception as exc:
         return {"indexed_documents": 0, "indexed_chunks": 0, "error": str(exc)}
->>>>>>> Stashed changes
