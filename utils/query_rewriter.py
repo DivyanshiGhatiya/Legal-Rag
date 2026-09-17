@@ -65,3 +65,4 @@ Latest question:
         return rewritten or query
     except Exception:
         return query
+       

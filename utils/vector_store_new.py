@@ -7,7 +7,6 @@ import chromadb
 from chromadb.config import Settings
 import ollama
 
-
 DEFAULT_COLLECTION_NAME = "legal_rag_chunks"
 DEFAULT_PERSIST_DIR = os.path.join("data", "chroma")
 EMBED_MODEL = "nomic-embed-text"
