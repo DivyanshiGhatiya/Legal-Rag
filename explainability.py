@@ -9,6 +9,7 @@ to test and reuse.
 from __future__ import annotations
 
 import html
+<<<<<<< HEAD
 import hashlib
 import importlib
 import json
@@ -16,6 +17,10 @@ import logging
 import re
 import time
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
+=======
+import re
+from typing import Any, Dict, Iterable, List, Optional, Tuple
+>>>>>>> ba4cfaf (Add explainability helpers)
 
 
 _TOKEN_PATTERN = re.compile(r"\S+")
@@ -31,6 +36,7 @@ _UNCERTAINTY_TERMS = {
     "insufficient",
     "uncertain",
 }
+<<<<<<< HEAD
 _EXTRACTED_PAGE_PATTERN = re.compile(r"\[\s*PAGE\s+(\d+)\s*\]", re.IGNORECASE)
 _CITATION_PATTERN = re.compile(r"\[([^\[\]\n]+)\]")
 _INTERNAL_STATUS_TAG_PATTERN = re.compile(
@@ -214,6 +220,13 @@ def extract_page_reference(chunk: Dict[str, Any]) -> Dict[str, Any]:
         "provenance": "UNAVAILABLE",
         "verified": False,
     }
+=======
+_PAGE_PATTERNS = (
+    re.compile(r"\bpage\s*[:#-]?\s*(\d+)\s*(?:of\s*\d+)?\b", re.IGNORECASE),
+    re.compile(r"\bp\.\s*(\d+)\b", re.IGNORECASE),
+    re.compile(r"[-–—]\s*(\d+)\s*[-–—]"),
+)
+>>>>>>> ba4cfaf (Add explainability helpers)
 
 
 def _normalize_token(token: str) -> str:
@@ -238,9 +251,67 @@ def extract_and_map_page_number(chunk: Dict[str, Any]) -> Tuple[int, str]:
     using the document's total length or a 2,000-character average page size.
     ``0`` is used when no reliable or estimable position exists.
     """
+<<<<<<< HEAD
     reference = extract_page_reference(chunk)
     page_number = reference["page_number"] or 0
     return page_number, reference["page_label"]
+=======
+    metadata = chunk.get("metadata") or {}
+    page_candidates = (
+        chunk.get("page"),
+        chunk.get("page_number"),
+        chunk.get("page_label"),
+        metadata.get("page"),
+        metadata.get("page_number"),
+        metadata.get("page_label"),
+        metadata.get("page_num"),
+        (chunk.get("fitz") or {}).get("page_number")
+        if isinstance(chunk.get("fitz"), dict)
+        else None,
+    )
+
+    for candidate in page_candidates:
+        if candidate is None or str(candidate).strip() == "":
+            continue
+        value = str(candidate).strip()
+        match = re.search(r"\d+", value)
+        if match and int(match.group(0)) > 0:
+            page = int(match.group(0))
+            return page, f"Page {page}"
+
+    text = str(chunk.get("text") or "")
+    for pattern in _PAGE_PATTERNS:
+        match = pattern.search(text)
+        if match:
+            page = int(match.group(1))
+            return page, f"Page {page}"
+
+    offset = (
+        chunk.get("char_offset")
+        or chunk.get("start_char")
+        or metadata.get("char_offset")
+        or metadata.get("start_char")
+    )
+    total_length = (
+        chunk.get("document_char_length")
+        or chunk.get("total_characters")
+        or metadata.get("document_char_length")
+        or metadata.get("total_characters")
+    )
+    try:
+        if offset is not None and int(offset) >= 0:
+            offset_value = int(offset)
+            if total_length and int(total_length) > 0:
+                estimated_pages = max(1, (int(total_length) + 1999) // 2000)
+                page = min(estimated_pages, (offset_value // 2000) + 1)
+            else:
+                page = (offset_value // 2000) + 1
+            return page, f"Page {page}"
+    except (TypeError, ValueError):
+        pass
+
+    return 0, "Page N/A"
+>>>>>>> ba4cfaf (Add explainability helpers)
 
 
 def extract_and_map_page(chunk: Dict[str, Any]) -> str:
@@ -255,10 +326,17 @@ def get_document_page_stats(
     document_pages: Dict[str, set[int]] = {}
     for chunk in retrieved_chunks:
         source = _chunk_source_name(chunk)
+<<<<<<< HEAD
         page_reference = extract_page_reference(chunk)
         document_pages.setdefault(source, set())
         if page_reference["verified"]:
             document_pages[source].add(page_reference["page_number"])
+=======
+        page_number, _ = extract_and_map_page_number(chunk)
+        document_pages.setdefault(source, set())
+        if page_number > 0:
+            document_pages[source].add(page_number)
+>>>>>>> ba4cfaf (Add explainability helpers)
 
     return {
         source: sorted(pages)
@@ -295,6 +373,7 @@ def _grounding_score(claim: str, context: str) -> float:
     return min(1.0, (0.75 * exact_overlap) + (0.25 * fuzzy_matches))
 
 
+<<<<<<< HEAD
 def split_answer_claims(answer: Any) -> List[str]:
     """Split answer text into claims, or preserve a caller's pre-split list."""
     if isinstance(answer, (list, tuple)):
@@ -1127,6 +1206,41 @@ def render_retrieval_trace_ui(
             })
         st_module.dataframe(rows, use_container_width=True, hide_index=True)
     return trace
+=======
+def compute_claim_attribution(
+    answer_claims: List[str],
+    retrieved_chunks: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    """Map each answer claim to its strongest retrieved chunk and source page."""
+    attributions: List[Dict[str, Any]] = []
+    for claim in answer_claims:
+        best_chunk: Optional[Dict[str, Any]] = None
+        best_score = 0.0
+        for chunk in retrieved_chunks:
+            score = _grounding_score(claim, str(chunk.get("text") or ""))
+            if best_chunk is None or score > best_score:
+                best_chunk = chunk
+                best_score = score
+
+        if best_chunk is None:
+            attributions.append({
+                "claim": claim,
+                "attribution_score": 0.0,
+                "mapped_source": "No source found",
+                "cited_chunk_id": None,
+            })
+            continue
+
+        source = _chunk_source_name(best_chunk)
+        _, page = extract_and_map_page_number(best_chunk)
+        attributions.append({
+            "claim": claim,
+            "attribution_score": round(best_score, 4),
+            "mapped_source": f"{source} • {page}",
+            "cited_chunk_id": best_chunk.get("chunk_id"),
+        })
+    return attributions
+>>>>>>> ba4cfaf (Add explainability helpers)
 
 
 def compute_token_relevance(
@@ -1244,6 +1358,7 @@ def render_uncertainty_highlighted_answer(
     )
 
 
+<<<<<<< HEAD
 def render_claim_status_answer(claim_attributions: List[Dict[str, Any]]) -> str:
     """Render escaped answer claims with verifier-status, not score, highlights."""
     styles = {
@@ -1265,6 +1380,8 @@ def render_claim_status_answer(claim_attributions: List[Dict[str, Any]]) -> str:
     return "<div style=\"line-height:1.7;\">" + " ".join(rendered) + "</div>"
 
 
+=======
+>>>>>>> ba4cfaf (Add explainability helpers)
 def render_generation_self_critique_card(critique_data: Dict[str, Any]) -> str:
     """Render generation faithfulness, risk, abstention, and feedback metrics."""
     faithfulness = float(
@@ -1338,6 +1455,7 @@ def render_explainability_ui(
     st_module: Any,
     query: str,
     retrieved_chunks: List[Dict[str, Any]],
+<<<<<<< HEAD
     answer_claims: Any,
     critique_data: Optional[Dict[str, Any]] = None,
     retrieval_metadata: Optional[Any] = None,
@@ -1348,6 +1466,10 @@ def render_explainability_ui(
     evidence_report: Optional[Dict[str, Any]] = None,
     formatted_answer: Optional[str] = None,
     show_answer: bool = True,
+=======
+    answer_claims: List[str],
+    critique_data: Optional[Dict[str, Any]] = None,
+>>>>>>> ba4cfaf (Add explainability helpers)
 ) -> None:
     """Render claim grounding, uncertainty answer, critique, and chunk heatmaps.
 
@@ -1363,6 +1485,7 @@ def render_explainability_ui(
         Individual answer sentences or claims.
     critique_data:
         Optional generation self-critique metrics for the health card.
+<<<<<<< HEAD
     claim_attributions, evidence_report:
         Optional precomputed results for avoiding repeated verifier calls during reruns.
     """
@@ -1550,6 +1673,57 @@ def render_explainability_ui(
             if page_reference["page_number"] is not None
             else "Page N/A"
         )
+=======
+    """
+    attributions = compute_claim_attribution(answer_claims, retrieved_chunks)
+    sentence_confidences = [
+        (
+            claim,
+            float(
+                attribution.get("attribution_score", 0.0)
+                if attribution
+                else 0.0
+            ),
+        )
+        for claim, attribution in zip(answer_claims, attributions)
+    ]
+
+    st_module.markdown("### Answer")
+    st_module.markdown(
+        render_uncertainty_highlighted_answer(sentence_confidences, attributions),
+        unsafe_allow_html=True,
+    )
+
+    if critique_data:
+        st_module.markdown(
+            render_generation_self_critique_card(critique_data),
+            unsafe_allow_html=True,
+        )
+
+    if not retrieved_chunks:
+        return
+
+    page_stats = get_document_page_stats(retrieved_chunks)
+    summary_parts = []
+    for source, pages in page_stats.items():
+        safe_source = html.escape(source)
+        page_label = ", ".join(str(page) for page in pages) if pages else "N/A"
+        summary_parts.append(f"📄 {safe_source} (Pages {html.escape(page_label)})")
+    if summary_parts:
+        st_module.markdown(
+            '<div style="background:#FFFFFF;color:#121110;border:1px solid '
+            'rgba(18,17,16,0.10);border-radius:0.75rem;padding:0.75rem 1rem;'
+            'margin:0.75rem 0;">'
+            + " | ".join(summary_parts)
+            + "</div>",
+            unsafe_allow_html=True,
+        )
+
+    st_module.markdown("### Explainable Retrieval Heatmap")
+    for rank, chunk in enumerate(retrieved_chunks, start=1):
+        source = html.escape(_chunk_source(chunk))
+        _, page_label = extract_and_map_page_number(chunk)
+>>>>>>> ba4cfaf (Add explainability helpers)
         page = html.escape(page_label)
         title = f"#{rank} • {source} • {page}"
         text = str(chunk.get("text") or "")
@@ -1568,6 +1742,7 @@ def render_explainability_ui(
                 unsafe_allow_html=True,
             )
             st_module.markdown("**Raw context:**")
+<<<<<<< HEAD
             st_module.text(text)
 
     st_module.markdown("### 7. Generation Self-Critique")
@@ -1578,6 +1753,9 @@ def render_explainability_ui(
         )
     else:
         st_module.info("No generation self-critique was supplied.")
+=======
+            st_module.markdown(text)
+>>>>>>> ba4cfaf (Add explainability helpers)
 
 
 # Integration example for streamlit_app_v2.py:
