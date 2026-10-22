@@ -1,16 +1,6 @@
-import os
 import re
-from pathlib import Path
-from openai import OpenAI
-from dotenv import dotenv_values, load_dotenv
+from utils.llm_client import GROQ_MODEL, get_llm_client
 
-PROJECT_ENV_FILE = Path(__file__).resolve().parents[1] / ".env"
-load_dotenv(dotenv_path=PROJECT_ENV_FILE)
-
-GROQ_API_KEY_ENV = "GROQ_API_KEY"
-LEGACY_GROK_API_KEY_ENV = "GROK_API_KEY"
-GROQ_BASE_URL = "https://api.groq.com/openai/v1"
-GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
 
 SYSTEM_PROMPT = """You are a legal assistant answering questions strictly using the provided context chunks from legal documents.
 
@@ -148,23 +138,6 @@ def verify_citations(answer_text, retrieved_chunks):
     }
 
 
-def _get_client():
-    # Accept the existing GROK_API_KEY spelling while standardizing on GROQ_API_KEY.
-    file_values = dotenv_values(PROJECT_ENV_FILE)
-    api_key = (
-        os.environ.get(GROQ_API_KEY_ENV)
-        or os.environ.get(LEGACY_GROK_API_KEY_ENV)
-        or file_values.get(GROQ_API_KEY_ENV)
-        or file_values.get(LEGACY_GROK_API_KEY_ENV)
-    )
-    if not api_key:
-        raise RuntimeError(
-            f"Missing {GROQ_API_KEY_ENV} environment variable. "
-            f"Set it before calling the generation module."
-        )
-    return OpenAI(api_key=api_key, base_url=GROQ_BASE_URL)
-
-
 def _build_context_block(chunks):
     parts = []
     for c in chunks:
@@ -230,7 +203,7 @@ Question: {query}
 Answer the question using only the context above. Cite chunk IDs inline like [exact_chunk_id] for every claim.
 Copy each complete ID exactly from a context header, including the document prefix. Never shorten an ID to only [chunk_0001]."""
 
-    client = _get_client()
+    client = get_llm_client()
 
     response = client.chat.completions.create(
         model=model,

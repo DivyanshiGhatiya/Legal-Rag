@@ -5,6 +5,7 @@ execution and backend error handling stay here so the UI only renders results.
 """
 
 import json
+import logging
 import os
 from typing import Any, Dict, List, Optional
 
@@ -19,6 +20,11 @@ from utils.embedding import (
     save_index_manifest,
 )
 from utils.generation import generate_answer
+from utils.query_classifier import (
+    assess_evidence,
+    classify_query,
+    max_retrieval_rounds,
+)
 from utils.pdf_processor import (
     clean_text,
     extract_text_and_metadata,
@@ -32,6 +38,7 @@ UPLOAD_DIR = os.path.join("data", "uploads")
 PROCESSED_DIR = "processed_data"
 CHUNKED_DIR = "chunked_data"
 INDEX_MANIFEST_PATH = os.path.join("data", "chroma_manifest.json")
+logger = logging.getLogger(__name__)
 
 
 def _error_result(message: str, stage: str, **extra: Any) -> Dict[str, Any]:
@@ -147,24 +154,80 @@ def query_legal_documents(
     use_reranker: bool = True,
     conversation_history: Optional[List[Dict[str, str]]] = None,
 ) -> Dict[str, Any]:
-    """Run retrieval and answer generation, returning one structured result."""
-    base = {"query": query, "hits": [], "answer": None}
+    """Classify, retrieve within the difficulty limit, and generate an answer."""
+    base = {
+        "query": query,
+        "hits": [],
+        "answer": None,
+        "classification": None,
+        "retrieval_rounds": [],
+    }
     if not query or not query.strip():
         return _error_result("Question cannot be empty.", "query_validation", **base)
 
-    try:
-        hits = retrieve(
-            query=query,
-            collection_name=DEFAULT_COLLECTION_NAME,
-            persist_dir=DEFAULT_PERSIST_DIR,
-            document_filter=document_filter,
-            section_filter=section_filter,
-            top_n_final=top_n_final,
-            use_reranker=use_reranker,
+    classification = classify_query(query)
+    base["classification"] = classification
+    round_limit = max_retrieval_rounds(classification.get("difficulty", ""))
+    search_query = query
+    hits_by_id = {}
+    round_hit_batches = []
+
+    for round_number in range(1, round_limit + 1):
+        try:
+            round_hits = retrieve(
+                query=search_query,
+                collection_name=DEFAULT_COLLECTION_NAME,
+                persist_dir=DEFAULT_PERSIST_DIR,
+                document_filter=document_filter,
+                section_filter=section_filter,
+                top_n_final=top_n_final,
+                use_reranker=use_reranker,
+            )
+        except Exception as exc:
+            if not hits_by_id:
+                return _error_result(str(exc), "retrieval", **base)
+            logger.exception("A later retrieval round failed; retaining prior evidence.")
+            base["retrieval_warning"] = str(exc)
+            break
+
+        base["retrieval_rounds"].append(
+            {"round": round_number, "query": search_query, "hit_count": len(round_hits)}
         )
-        base["hits"] = hits
-    except Exception as exc:
-        return _error_result(str(exc), "retrieval", **base)
+        round_hit_batches.append(round_hits)
+        for hit in round_hits:
+            chunk_id = hit.get("chunk_id")
+            if chunk_id is not None:
+                hits_by_id.setdefault(chunk_id, hit)
+
+        merged_hits = []
+        merged_ids = set()
+        for rank in range(max((len(batch) for batch in round_hit_batches), default=0)):
+            for batch in round_hit_batches:
+                if rank < len(batch):
+                    hit = batch[rank]
+                    chunk_id = hit.get("chunk_id")
+                    if chunk_id is not None and chunk_id not in merged_ids:
+                        merged_hits.append(hit)
+                        merged_ids.add(chunk_id)
+        base["hits"] = merged_hits[:top_n_final]
+
+        if not round_hits:
+            break
+        if round_number >= round_limit:
+            break
+
+        assessment = assess_evidence(query, search_query, list(hits_by_id.values()))
+        base["retrieval_rounds"][-1]["evidence_sufficient"] = assessment["sufficient"]
+        if assessment.get("error"):
+            base["retrieval_rounds"][-1]["evidence_check_error"] = assessment["error"]
+            break
+        if assessment["sufficient"]:
+            break
+
+        next_query = assessment.get("next_query", "").strip()
+        if not next_query or next_query.casefold() == search_query.casefold():
+            break
+        search_query = next_query
 
     if not base["hits"]:
         base["success"] = True
