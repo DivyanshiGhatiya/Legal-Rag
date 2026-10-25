@@ -5,7 +5,9 @@ execution and backend error handling stay here so the UI only renders results.
 """
 
 import json
+import logging
 import os
+import time
 from typing import Any, Dict, List, Optional
 
 from utils.chunker import create_chunks_hierarchical, save_chunked
@@ -18,13 +20,19 @@ from utils.embedding import (
     get_collection,
     save_index_manifest,
 )
-from utils.generation import generate_answer
+from explainability import (
+    build_llm_verifiers,
+    compute_claim_attribution,
+    generate_evidence_report,
+)
+from utils.generation import generate_answer, user_friendly_model_error
 from utils.pdf_processor import (
     clean_text,
     extract_text_and_metadata,
     save_processed,
     validate_pdf,
 )
+from utils.query_rewriter import looks_like_follow_up, rewrite_query
 from utils.retrieval import refresh_corpus_cache, retrieve
 
 
@@ -32,6 +40,7 @@ UPLOAD_DIR = os.path.join("data", "uploads")
 PROCESSED_DIR = "processed_data"
 CHUNKED_DIR = "chunked_data"
 INDEX_MANIFEST_PATH = os.path.join("data", "chroma_manifest.json")
+logger = logging.getLogger(__name__)
 
 
 def _error_result(message: str, stage: str, **extra: Any) -> Dict[str, Any]:
@@ -40,6 +49,83 @@ def _error_result(message: str, stage: str, **extra: Any) -> Dict[str, Any]:
         **extra,
         "success": False,
         "error": {"stage": stage, "message": message},
+    }
+
+
+def build_explainability_data(
+    answer: str,
+    retrieved_chunks: List[Dict[str, Any]],
+    citation_report: Optional[Dict[str, Any]] = None,
+) -> Optional[Dict[str, Any]]:
+    """Build optional explainability results without affecting a generated answer."""
+    if not str(answer or "").strip():
+        return None
+
+    claim_verifier = None
+    contradiction_verifier = None
+    explainability_error = None
+    if retrieved_chunks:
+        verifier_setup_started = time.perf_counter()
+        try:
+            claim_verifier, contradiction_verifier = build_llm_verifiers()
+        except Exception as exc:
+            logger.exception(
+                "pipeline_stage=verifier_setup status=failed error_type=%s",
+                type(exc).__name__,
+            )
+            explainability_error = user_friendly_model_error(exc)
+        finally:
+            logger.info(
+                "pipeline_stage=verifier_setup duration_seconds=%.3f",
+                time.perf_counter() - verifier_setup_started,
+            )
+
+    try:
+        claim_verification_started = time.perf_counter()
+        claim_attributions = compute_claim_attribution(
+            answer,
+            retrieved_chunks,
+            verifier=claim_verifier,
+        )
+        logger.info(
+            "pipeline_stage=claim_verification duration_seconds=%.3f claims=%d",
+            time.perf_counter() - claim_verification_started,
+            len(claim_attributions),
+        )
+        evidence_report_started = time.perf_counter()
+        evidence_report = generate_evidence_report(
+            answer,
+            retrieved_chunks,
+            claim_attributions=claim_attributions,
+            retrieval_metadata=retrieved_chunks,
+            contradiction_verifier=contradiction_verifier,
+            citation_report=citation_report,
+        )
+        logger.info(
+            "pipeline_stage=evidence_report duration_seconds=%.3f",
+            time.perf_counter() - evidence_report_started,
+        )
+    except Exception as exc:
+        logger.exception(
+            "pipeline_stage=explainability_analysis status=failed error_type=%s",
+            type(exc).__name__,
+        )
+        message = (
+            f"Explainability processing failed ({type(exc).__name__}). "
+            "The answer and retrieved evidence remain available; check server logs."
+        )
+        return {
+            "citation_report": citation_report,
+            "claim_attributions": [],
+            "evidence_report": None,
+            "error": message,
+        }
+
+    return {
+        "citation_report": citation_report,
+        "claim_attributions": claim_attributions,
+        "evidence_report": evidence_report,
+        "error": explainability_error,
     }
 
 
@@ -148,13 +234,34 @@ def query_legal_documents(
     conversation_history: Optional[List[Dict[str, str]]] = None,
 ) -> Dict[str, Any]:
     """Run retrieval and answer generation, returning one structured result."""
-    base = {"query": query, "hits": [], "answer": None}
+    query_started = time.perf_counter()
+    base = {"query": query, "retrieval_query": query, "hits": [], "answer": None}
     if not query or not query.strip():
+        logger.info(
+            "pipeline_stage=query_validation duration_seconds=%.3f",
+            time.perf_counter() - query_started,
+        )
+        logger.info(
+            "pipeline_stage=backend_query_total duration_seconds=%.3f",
+            time.perf_counter() - query_started,
+        )
         return _error_result("Question cannot be empty.", "query_validation", **base)
 
+    retrieval_query = query
+    if looks_like_follow_up(query, conversation_history or []):
+        rewrite_started = time.perf_counter()
+        retrieval_query = rewrite_query(query, conversation_history or [])
+        logger.info(
+            "pipeline_stage=query_rewrite_total duration_seconds=%.3f changed=%s",
+            time.perf_counter() - rewrite_started,
+            retrieval_query != query,
+        )
+    base["retrieval_query"] = retrieval_query
+
     try:
+        retrieval_started = time.perf_counter()
         hits = retrieve(
-            query=query,
+            query=retrieval_query,
             collection_name=DEFAULT_COLLECTION_NAME,
             persist_dir=DEFAULT_PERSIST_DIR,
             document_filter=document_filter,
@@ -163,7 +270,20 @@ def query_legal_documents(
             use_reranker=use_reranker,
         )
         base["hits"] = hits
+        logger.info(
+            "pipeline_stage=backend_retrieval duration_seconds=%.3f chunks=%d",
+            time.perf_counter() - retrieval_started,
+            len(hits),
+        )
     except Exception as exc:
+        logger.exception(
+            "pipeline_stage=backend_retrieval status=failed error_type=%s",
+            type(exc).__name__,
+        )
+        logger.info(
+            "pipeline_stage=backend_query_total duration_seconds=%.3f",
+            time.perf_counter() - query_started,
+        )
         return _error_result(str(exc), "retrieval", **base)
 
     if not base["hits"]:
@@ -172,19 +292,40 @@ def query_legal_documents(
             "answer": "No relevant context was retrieved for this question from the currently indexed documents.",
             "used_chunk_ids": [],
         }
+        logger.info(
+            "pipeline_stage=backend_query_total duration_seconds=%.3f",
+            time.perf_counter() - query_started,
+        )
         return base
 
     try:
         # Generation receives history only to resolve references; retrieval stays document-grounded.
+        generation_started = time.perf_counter()
         base["answer"] = generate_answer(
             query,
             base["hits"],
             conversation_history=conversation_history,
         )
+        logger.info(
+            "pipeline_stage=backend_answer_generation duration_seconds=%.3f",
+            time.perf_counter() - generation_started,
+        )
     except Exception as exc:
-        return _error_result(str(exc), "generation", **base)
+        logger.exception(
+            "pipeline_stage=backend_answer_generation status=failed error_type=%s",
+            type(exc).__name__,
+        )
+        logger.info(
+            "pipeline_stage=backend_query_total duration_seconds=%.3f",
+            time.perf_counter() - query_started,
+        )
+        return _error_result(user_friendly_model_error(exc), "generation", **base)
 
     base["success"] = True
+    logger.info(
+        "pipeline_stage=backend_query_total duration_seconds=%.3f",
+        time.perf_counter() - query_started,
+    )
     return base
 
 

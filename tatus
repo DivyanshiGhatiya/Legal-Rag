@@ -1,0 +1,30 @@
+[33m9f6b331[m Agent host session 46f1b82b-d715-4461-ba4b-c068f402ac62 - turn 6
+[33m640b9e9[m Agent host session 46f1b82b-d715-4461-ba4b-c068f402ac62 - turn 6 start
+[33m34d5e10[m Agent host session 46f1b82b-d715-4461-ba4b-c068f402ac62 - turn 5
+[33m1883c7a[m Agent host session 46f1b82b-d715-4461-ba4b-c068f402ac62 - turn 5 start
+[33m243eccf[m Agent host session 46f1b82b-d715-4461-ba4b-c068f402ac62 - turn 4
+[33m963983a[m Agent host session 46f1b82b-d715-4461-ba4b-c068f402ac62 - turn 4 start
+[33m723ecdc[m Agent host session 46f1b82b-d715-4461-ba4b-c068f402ac62 - turn 3
+[33mda9aa00[m Agent host session 46f1b82b-d715-4461-ba4b-c068f402ac62 - turn 3 start
+[33ma7a3a4d[m Agent host session 46f1b82b-d715-4461-ba4b-c068f402ac62 - turn 2
+[33m1b71b3c[m Agent host session 46f1b82b-d715-4461-ba4b-c068f402ac62 - turn 2 start
+[33mfe63717[m Agent host session 46f1b82b-d715-4461-ba4b-c068f402ac62 - turn 1
+[33me7f1eb8[m Agent host session 46f1b82b-d715-4461-ba4b-c068f402ac62 - turn 1 start
+[33m1f8bbbe[m Agent host session 46f1b82b-d715-4461-ba4b-c068f402ac62 - baseline checkpoint
+[33m5db4704[m[33m ([m[1;31morigin/feature/query-classification[m[33m)[m added query classifier
+[33mba4cfaf[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mLegalRag-phase2[m[33m, [m[1;31morigin/LegalRag-phase2[m[33m)[m Add explainability helpers
+[33md55b0e1[m OCR implemntation
+[33m031f89c[m[33m ([m[1;31morigin/final_legal_rag[m[33m, [m[1;32mfinal_legal_rag[m[33m)[m Frontend implementation along with Project
+[33m1081973[m[33m ([m[1;32membedding_and_chromadb[m[33m)[m Fix merge conflict in app.py
+[33m2488a6c[m[33m ([m[1;31morigin/version2[m[33m)[m addes query rewriting and updated chat panel
+[33mf58dea7[m[33m ([m[1;31morigin/Final-rag[m[33m)[m Citation Verification implementation
+[33m4319507[m Final RAG pipeline implementation
+[33m7b553a1[m[33m ([m[1;31morigin/embedding_and_chromadb[m[33m)[m basic pipeline
+[33m0922f94[m[33m ([m[1;35mrefs/stash[m[33m)[m WIP on embedding_and_chromadb: 2923599 Update Embedding
+[33m2cfaba4[m index on embedding_and_chromadb: 2923599 Update Embedding
+[33m2923599[m[33m ([m[1;31morigin/retrieval_layer[m[33m, [m[1;32mretrieval_layer[m[33m)[m Update Embedding
+[33m10c52e6[m Add Embedding generation and ChromaDB storage
+[33m112d261[m[33m ([m[1;31morigin/darshika[m[33m)[m Add local Embedding pipeline with Ollama and ChromaDB
+[33m9e93b3d[m[33m ([m[1;31morigin/retrieval[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mretrieval[m[33m, [m[1;32mmain[m[33m)[m Add chunking module
+[33m433739c[m implementation of upf uploader module
+[33m55123fb[m New commit

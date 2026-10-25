@@ -1,15 +1,47 @@
+import logging
+import threading
+import time
 from typing import Any, Dict
 
 import streamlit as st
 
 from app import (
+    build_explainability_data,
     get_corpus_metrics,
     list_indexed_documents,
     process_document,
     query_legal_documents,
     remove_indexed_document,
 )
+from explainability import (
+    format_legal_answer,
+    render_explainability_ui,
+)
 
+logger = logging.getLogger(__name__)
+
+
+def _warm_reranker_resource() -> None:
+    try:
+        from utils.retrieval import _get_cross_encoder
+
+        _get_cross_encoder()
+    except Exception as exc:
+        logger.error(
+            "pipeline_stage=cross_encoder_warmup status=failed error_type=%s",
+            type(exc).__name__,
+        )
+
+
+@st.cache_resource(show_spinner=False)
+def _start_reranker_warmup() -> threading.Thread:
+    warmup_thread = threading.Thread(
+        target=_warm_reranker_resource,
+        name="legal-rag-cross-encoder-warmup",
+        daemon=True,
+    )
+    warmup_thread.start()
+    return warmup_thread
 
 st.set_page_config(page_title="Legal RAG", page_icon="⚖️", layout="wide")
 
@@ -690,6 +722,9 @@ def documents_page() -> None:
 def chat_page() -> None:
     st.markdown("<div class='page-title'>Ask about your legal documents</div>", unsafe_allow_html=True)
     st.caption("Search across indexed agreements and clauses using the legal retrieval pipeline.")
+    reranker_warmup = _start_reranker_warmup()
+    if reranker_warmup.is_alive():
+        st.caption("Preparing the local reranker in the background.")
 
     last_upload = st.session_state.get("last_upload")
     if last_upload:
@@ -717,42 +752,88 @@ def chat_page() -> None:
             else:
                 chunks = message.get("chunks", [])
                 citations = message.get("citations", [])
+                explainability = message.get("explainability")
+                citation_report = (
+                    explainability.get("citation_report")
+                    if explainability
+                    else None
+                )
+                validated_ids = (
+                    citation_report.get("citations", [])
+                    if isinstance(citation_report, dict)
+                    else []
+                )
+                validated_id_set = {str(chunk_id) for chunk_id in validated_ids}
+
+                st.markdown(format_legal_answer(message["content"]))
+
+                explainability = message.get("explainability")
+                if explainability and explainability.get("evidence_report") is not None:
+                    rendering_started = time.perf_counter()
+                    try:
+                        render_explainability_ui(
+                            st_module=st,
+                            query=message.get("query", ""),
+                            retrieved_chunks=chunks,
+                            answer_claims=message["content"],
+                            retrieval_metadata=chunks,
+                            citation_report=explainability.get("citation_report"),
+                            claim_attributions=explainability["claim_attributions"],
+                            evidence_report=explainability["evidence_report"],
+                            show_answer=False,
+                        )
+                    finally:
+                        logger.info(
+                            "pipeline_stage=explainability_render "
+                            "duration_seconds=%.3f",
+                            time.perf_counter() - rendering_started,
+                        )
+                    if not citation_report:
+                        st.info(
+                            "Citation validation is unavailable because the query "
+                            "pipeline did not return a citation report."
+                        )
+                elif message.get("explainability_unavailable"):
+                    st.info(message["explainability_unavailable"])
+                if explainability and explainability.get("error"):
+                    st.warning(explainability["error"])
 
                 if chunks:
                     st.success(f"✅ Found {len(chunks)} relevant chunks")
+                if citation_report:
+                    if citation_report.get("is_valid"):
+                        st.success("✅ Citation validation passed")
+                    else:
+                        st.warning("Citation validation found issues.")
 
-                st.markdown(message["content"])
-
-                if chunks:
-                    st.success("✅ Citation verification passed")
-                    verified_ids = citations or [
-                        chunk.get("chunk_id")
+                if validated_ids:
+                    verified_labels = ", ".join(
+                        f"`{chunk_id}`" for chunk_id in validated_ids
+                    )
+                    st.caption(f"Validated citation IDs: {verified_labels}")
+                    cited_chunks = [
+                        chunk
                         for chunk in chunks
-                        if chunk.get("chunk_id")
+                        if str(chunk.get("chunk_id")) in validated_id_set
                     ]
-                    if verified_ids:
-                        verified_labels = ", ".join(
-                            f"`{chunk_id}`" for chunk_id in verified_ids
-                        )
-                        st.caption(f"Verified chunks: {verified_labels}")
-
-                    st.markdown("**Verified Citations:**")
-                    citation_columns = st.columns(len(chunks))
-                    for rank, (column, chunk) in enumerate(
-                        zip(citation_columns, chunks), start=1
-                    ):
-                        metadata = chunk.get("metadata") or {}
-                        page = chunk.get("page") or metadata.get("page", "N/A")
-                        with column:
-                            st.markdown(
-                                f"""
-                                <div class="verified-citation-card">
-                                    <div class="verified-citation-label">📄 Source reference #{rank}</div>
-                                    <div class="verified-citation-page">Page {page}</div>
-                                </div>
-                                """,
-                                unsafe_allow_html=True,
-                            )
+                    if cited_chunks:
+                        st.markdown("**Validated Citations:**")
+                        citation_columns = st.columns(len(cited_chunks))
+                        for rank, (column, chunk) in enumerate(
+                            zip(citation_columns, cited_chunks), start=1
+                        ):
+                            metadata = chunk.get("metadata") or {}
+                            page = chunk.get("page") or metadata.get("page", "N/A")
+                            with column:
+                                st.markdown(
+                                    f"""
+                                    <div class="verified-citation-card">
+                                        <div class="verified-citation-label">📄 Source reference #{rank}</div>
+                                        <div class="verified-citation-page">Page {page}</div>
+                                    </div>
+                                    """,
+                                    unsafe_allow_html=True,
+                                )
 
                 if citations:
                     st.markdown("<div class=\"citation-list\">" + "".join(f"<span class='citation'>{cid}</span>" for cid in citations) + "</div>", unsafe_allow_html=True)
@@ -787,20 +868,39 @@ def chat_page() -> None:
     # Streamlit keeps chat_input docked at the bottom of the page automatically.
     submitted_query = st.chat_input("Ask a legal question...")
     if submitted_query:
+        chat_query_started = time.perf_counter()
         conversation_history = list(st.session_state["chat_history"])
         st.session_state["chat_history"].append(
             {"role": "user", "content": submitted_query}
         )
-        with st.spinner("Retrieving relevant legal passages…"):
-            query_result = query_legal_documents(
-                query=submitted_query,
-                document_filter=(
-                    last_upload["file_name"] if restrict_to_upload else None
-                ),
-                top_n_final=5,
-                use_reranker=True,
-                conversation_history=conversation_history,
+        try:
+            with st.spinner("Retrieving relevant legal passages…"):
+                query_result = query_legal_documents(
+                    query=submitted_query,
+                    document_filter=(
+                        last_upload["file_name"] if restrict_to_upload else None
+                    ),
+                    top_n_final=5,
+                    use_reranker=True,
+                    conversation_history=conversation_history,
+                )
+        except Exception as exc:
+            logger.exception(
+                "pipeline_stage=chat_query status=failed error_type=%s",
+                type(exc).__name__,
             )
+            query_result = {
+                "success": False,
+                "hits": [],
+                "answer": None,
+                "error": {
+                    "stage": "query",
+                    "message": (
+                        f"Unexpected query failure ({type(exc).__name__}). "
+                        "Check server logs for details."
+                    ),
+                },
+            }
 
         hits = query_result.get("hits", [])
         if not query_result.get("success"):
@@ -812,18 +912,44 @@ def chat_page() -> None:
             st.error(error_text)
             answer = f"Unable to complete this question.\n\n{error_text}"
             used_chunk_ids = []
+            explainability_data = None
+            explainability_unavailable = (
+                "Explainability was not run because the legal query did not complete. "
+                f"{len(hits)} retrieved passage(s) were retained for inspection."
+            )
         else:
             answer_result = query_result.get("answer") or {}
             answer = answer_result.get("answer", "")
             used_chunk_ids = answer_result.get("used_chunk_ids", [])
+            citation_report = answer_result.get("citation_report")
+            explainability_data = build_explainability_data(
+                answer,
+                hits,
+                citation_report=citation_report,
+            )
+            explainability_unavailable = (
+                "Explainability checks could not be completed. "
+                "The generated answer and retrieved evidence remain available."
+                if explainability_data is None
+                else None
+            )
+            if explainability_data and explainability_data.get("evidence_report") is None:
+                explainability_unavailable = None
 
         st.session_state["chat_history"].append(
             {
                 "role": "assistant",
                 "content": answer,
+                "query": submitted_query,
                 "chunks": hits,
                 "citations": used_chunk_ids,
+                "explainability": explainability_data,
+                "explainability_unavailable": explainability_unavailable,
             }
+        )
+        logger.info(
+            "pipeline_stage=chat_query_total duration_seconds=%.3f",
+            time.perf_counter() - chat_query_started,
         )
         st.rerun()
 

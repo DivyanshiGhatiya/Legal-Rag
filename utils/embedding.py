@@ -1,6 +1,9 @@
 import os
 import json
 import hashlib
+import logging
+import time
+from functools import lru_cache
 import chromadb
 from chromadb.config import Settings
 import ollama
@@ -8,6 +11,7 @@ import ollama
 DEFAULT_COLLECTION_NAME = "legal_rag_chunks"
 DEFAULT_PERSIST_DIR = os.path.join("data", "chroma")
 EMBED_MODEL = "nomic-embed-text"
+logger = logging.getLogger(__name__)
 
 
 def compute_file_hash(file_bytes):
@@ -17,8 +21,9 @@ def compute_file_hash(file_bytes):
 def embed_texts(texts, prefix="search_document: "):
     if not texts:
         return []
-    client = ollama.Client(host="http://127.0.0.1:11434")
+    client = _get_ollama_client()
     prefixed = [prefix + t for t in texts]
+    started = time.perf_counter()
     try:
         response = client.embed(model=EMBED_MODEL, input=prefixed)
     except Exception as exc:
@@ -27,6 +32,12 @@ def embed_texts(texts, prefix="search_document: "):
             "Make sure Ollama is installed correctly, running, and the model is available. "
             f"Original error: {exc}"
         ) from exc
+    finally:
+        logger.info(
+            "pipeline_stage=embedding duration_seconds=%.3f input_count=%d",
+            time.perf_counter() - started,
+            len(texts),
+        )
     embeddings = response.embeddings if hasattr(response, "embeddings") else response.get("embeddings", [])
     if not embeddings:
         raise RuntimeError(
@@ -59,12 +70,27 @@ def document_already_embedded(document_name, document_hash, collection_name=DEFA
 
 
 def get_chroma_client(persist_dir=DEFAULT_PERSIST_DIR):
+    return _get_chroma_client(os.fspath(persist_dir))
+
+
+@lru_cache(maxsize=4)
+def _get_chroma_client(persist_dir):
     return chromadb.PersistentClient(path=persist_dir, settings=Settings(allow_reset=True))
 
 
 def get_collection(collection_name=DEFAULT_COLLECTION_NAME, persist_dir=DEFAULT_PERSIST_DIR):
+    return _get_collection(collection_name, os.fspath(persist_dir))
+
+
+@lru_cache(maxsize=16)
+def _get_collection(collection_name, persist_dir):
     client = get_chroma_client(persist_dir)
     return client.get_or_create_collection(name=collection_name)
+
+
+@lru_cache(maxsize=1)
+def _get_ollama_client():
+    return ollama.Client(host="http://127.0.0.1:11434")
 
 
 def embed_chunks(chunks, collection_name=DEFAULT_COLLECTION_NAME, persist_dir=DEFAULT_PERSIST_DIR, document_name=None, document_hash=None):

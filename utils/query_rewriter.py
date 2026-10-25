@@ -1,19 +1,14 @@
-import os
+import logging
 import re
+import time
 
-from openai import OpenAI
-from dotenv import load_dotenv
-
-load_dotenv()
-
-GROQ_API_KEY_ENV = "GROQ_API_KEY"
-GROQ_BASE_URL = "https://api.groq.com/openai/v1"
-GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
+from utils.generation import GROQ_MODEL, _get_client, create_chat_completion
 
 _FOLLOW_UP_PATTERN = re.compile(
     r"\b(it|they|them|this|that|these|those|he|she|above|before|same|also|instead|what about|how about|why)\b",
     re.IGNORECASE,
 )
+logger = logging.getLogger(__name__)
 
 
 def looks_like_follow_up(query, history):
@@ -27,10 +22,6 @@ def rewrite_query(query, history, model=GROQ_MODEL, max_tokens=180):
     Returns the original query on configuration, network, or model failures.
     """
     if not query or not history or not looks_like_follow_up(query, history):
-        return query
-
-    api_key = os.environ.get(GROQ_API_KEY_ENV)
-    if not api_key:
         return query
 
     recent_history = history[-6:]
@@ -47,9 +38,12 @@ Conversation:
 Latest question:
 {query}"""
 
+    started = time.perf_counter()
     try:
-        client = OpenAI(api_key=api_key, base_url=GROQ_BASE_URL)
-        response = client.chat.completions.create(
+        client = _get_client()
+        response = create_chat_completion(
+            client,
+            stage="query_rewrite",
             model=model,
             messages=[
                 {
@@ -60,9 +54,21 @@ Latest question:
             ],
             temperature=0,
             max_tokens=max_tokens,
+            timeout=30,
         )
         rewritten = (response.choices[0].message.content or "").strip()
+        logger.info(
+            "pipeline_stage=query_rewrite duration_seconds=%.3f status=%s",
+            time.perf_counter() - started,
+            "rewritten" if rewritten else "empty_response",
+        )
         return rewritten or query
-    except Exception:
+    except Exception as exc:
+        logger.exception(
+            "pipeline_stage=query_rewrite duration_seconds=%.3f "
+            "status=fallback error_type=%s",
+            time.perf_counter() - started,
+            type(exc).__name__,
+        )
         return query
        
