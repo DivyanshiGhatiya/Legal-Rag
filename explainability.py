@@ -15,6 +15,8 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 _TOKEN_PATTERN = re.compile(r"\S+")
 _WORD_PATTERN = re.compile(r"[A-Za-z0-9]+")
+_CITATION_PATTERN = re.compile(r"\[([^\[\]\n]+)\]")
+_BULLET_PATTERN = re.compile(r"^\s*(?:[-*+]\s+|\d+\.\s+)")
 _UNCERTAINTY_TERMS = {
     "may",
     "might",
@@ -197,6 +199,181 @@ def compute_claim_attribution(
             "cited_chunk_id": best_chunk.get("chunk_id"),
         })
     return attributions
+
+
+def _split_answer_claims(answer: str) -> List[str]:
+    """Split an answer into citation-bearing prose sentences and bullet claims."""
+    claims: List[str] = []
+    for paragraph in re.split(r"\n\s*\n", answer or ""):
+        lines = [line.strip() for line in paragraph.splitlines() if line.strip()]
+        if not lines:
+            continue
+        if any(_BULLET_PATTERN.match(line) for line in lines):
+            current: List[str] = []
+            for line in lines:
+                if _BULLET_PATTERN.match(line) and current:
+                    claims.append(" ".join(current))
+                    current = []
+                current.append(line)
+            if current:
+                claims.append(" ".join(current))
+            continue
+
+        paragraph_text = " ".join(lines)
+        claims.extend(
+            sentence.strip()
+            for sentence in re.split(
+                r"(?<=[.!?])\s+(?=[A-Z0-9*`])", paragraph_text
+            )
+            if sentence.strip()
+        )
+    return claims
+
+
+def _normalized_chunk_id(chunk_id: Any) -> str:
+    normalized = str(chunk_id).strip().lower()
+    match = re.match(r"^(.*?)(\d+)$", normalized)
+    if not match:
+        return normalized
+    return f"{match.group(1)}{int(match.group(2))}"
+
+
+def _chunk_suffix(chunk_id: Any) -> Optional[str]:
+    match = re.search(r"(?:^|_)chunk_(\d+)$", str(chunk_id).strip().lower())
+    return f"chunk_{int(match.group(1))}" if match else None
+
+
+def build_explainability_data(
+    answer: str,
+    retrieved_chunks: List[Dict[str, Any]],
+    citation_report: Optional[Dict[str, Any]] = None,
+    retrieval_rounds: Optional[List[Dict[str, Any]]] = None,
+) -> Dict[str, Any]:
+    """Assemble explainability from the pipeline's citations and retrieved hits.
+
+    Citation validation verifies that references resolve to retrieved chunks;
+    lexical attribution is a heuristic and does not prove factual entailment.
+    """
+    claims = _split_answer_claims(answer)
+    attributions = compute_claim_attribution(claims, retrieved_chunks)
+    chunks_by_normalized_id = {
+        _normalized_chunk_id(chunk.get("chunk_id")): str(chunk.get("chunk_id"))
+        for chunk in retrieved_chunks
+        if chunk.get("chunk_id") is not None
+    }
+    suffix_ids: Dict[str, set[str]] = {}
+    for chunk in retrieved_chunks:
+        chunk_id = chunk.get("chunk_id")
+        if chunk_id is None:
+            continue
+        suffix = _chunk_suffix(chunk_id)
+        if suffix:
+            suffix_ids.setdefault(suffix, set()).add(str(chunk_id))
+    aliases = {
+        suffix: next(iter(chunk_ids))
+        for suffix, chunk_ids in suffix_ids.items()
+        if len(chunk_ids) == 1
+    }
+    validated_ids = {
+        str(chunk_id)
+        for chunk_id in (citation_report or {}).get("citations", [])
+    }
+
+    claim_reports: List[Dict[str, Any]] = []
+    for claim, attribution in zip(claims, attributions):
+        raw_citations = _CITATION_PATTERN.findall(claim)
+        cited_chunk_ids: List[str] = []
+        valid_cited_ids: List[str] = []
+        unresolved_citations: List[str] = []
+        for citation in raw_citations:
+            normalized = _normalized_chunk_id(citation)
+            resolved_id = chunks_by_normalized_id.get(normalized)
+            if resolved_id is None:
+                resolved_id = aliases.get(normalized)
+            if resolved_id and resolved_id not in cited_chunk_ids:
+                cited_chunk_ids.append(resolved_id)
+                if resolved_id in validated_ids:
+                    valid_cited_ids.append(resolved_id)
+            elif resolved_id is None and citation not in unresolved_citations:
+                unresolved_citations.append(citation)
+
+        if not retrieved_chunks:
+            verification_status = "insufficient_evidence"
+        elif citation_report is None:
+            verification_status = "unavailable"
+        elif (
+            valid_cited_ids
+            and not unresolved_citations
+            and len(valid_cited_ids) == len(cited_chunk_ids)
+        ):
+            verification_status = "citation_reference_verified"
+        elif valid_cited_ids:
+            verification_status = "partially_verified"
+        elif cited_chunk_ids or raw_citations:
+            verification_status = "invalid_citation"
+        else:
+            verification_status = "missing_citation"
+
+        claim_reports.append({
+            **attribution,
+            "claim": claim,
+            "cited_chunk_ids": cited_chunk_ids,
+            "validated_citation_ids": valid_cited_ids,
+            "unresolved_citations": unresolved_citations,
+            "verification_status": verification_status,
+        })
+
+    verified_claim_count = sum(
+        claim["verification_status"] == "citation_reference_verified"
+        for claim in claim_reports
+    )
+    coverage = (
+        verified_claim_count / len(claim_reports)
+        if claim_reports and citation_report is not None
+        else None
+    )
+    assessed_sufficiency = [
+        round_data["evidence_sufficient"]
+        for round_data in (retrieval_rounds or [])
+        if isinstance(round_data.get("evidence_sufficient"), bool)
+    ]
+    evidence_report = {
+        "status": (
+            "no_retrieved_evidence"
+            if not retrieved_chunks
+            else "citation_coverage_complete"
+            if claim_reports and verified_claim_count == len(claim_reports)
+            else "citation_coverage_incomplete"
+        ),
+        "claim_count": len(claim_reports),
+        "verified_claim_count": verified_claim_count,
+        "citation_coverage": coverage,
+        "claims": claim_reports,
+        "unverified_claims": [
+            claim["claim"]
+            for claim in claim_reports
+            if citation_report is not None
+            and claim["verification_status"] != "citation_reference_verified"
+        ],
+        "citation_validation_available": citation_report is not None,
+        "citation_report": citation_report,
+        "retrieval_sufficiency": (
+            assessed_sufficiency[-1] if assessed_sufficiency else None
+        ),
+        "contradiction_analysis": {
+            "status": "not_available",
+            "reason": (
+                "The current retrieval and generation pipeline has no "
+                "contradiction-analysis component."
+            ),
+        },
+    }
+    return {
+        "claims": claims,
+        "claim_attributions": claim_reports,
+        "citation_report": citation_report,
+        "evidence_report": evidence_report,
+    }
 
 
 def compute_token_relevance(
@@ -389,6 +566,11 @@ def render_explainability_ui(
     retrieved_chunks: List[Dict[str, Any]],
     answer_claims: List[str],
     critique_data: Optional[Dict[str, Any]] = None,
+    retrieval_metadata: Optional[List[Dict[str, Any]]] = None,
+    citation_report: Optional[Dict[str, Any]] = None,
+    claim_attributions: Optional[List[Dict[str, Any]]] = None,
+    evidence_report: Optional[Dict[str, Any]] = None,
+    show_answer: bool = True,
 ) -> None:
     """Render claim grounding, uncertainty answer, critique, and chunk heatmaps.
 
@@ -405,7 +587,9 @@ def render_explainability_ui(
     critique_data:
         Optional generation self-critique metrics for the health card.
     """
-    attributions = compute_claim_attribution(answer_claims, retrieved_chunks)
+    attributions = claim_attributions or compute_claim_attribution(
+        answer_claims, retrieved_chunks
+    )
     sentence_confidences = [
         (
             claim,
@@ -418,11 +602,14 @@ def render_explainability_ui(
         for claim, attribution in zip(answer_claims, attributions)
     ]
 
-    st_module.markdown("### Answer")
-    st_module.markdown(
-        render_uncertainty_highlighted_answer(sentence_confidences, attributions),
-        unsafe_allow_html=True,
-    )
+    if show_answer:
+        st_module.markdown("### Answer")
+        st_module.markdown(
+            render_uncertainty_highlighted_answer(
+                sentence_confidences, attributions
+            ),
+            unsafe_allow_html=True,
+        )
 
     if critique_data:
         st_module.markdown(
@@ -430,8 +617,115 @@ def render_explainability_ui(
             unsafe_allow_html=True,
         )
 
+    if evidence_report is not None:
+        st_module.markdown("### Evidence Verification")
+        claim_count = evidence_report.get("claim_count", 0)
+        verified_count = evidence_report.get("verified_claim_count", 0)
+        coverage = evidence_report.get("citation_coverage")
+        if not evidence_report.get("citation_validation_available"):
+            st_module.info(
+                "Citation verification was not available for this answer."
+            )
+        elif not retrieved_chunks:
+            st_module.warning(
+                "Insufficient evidence: no retrieved document chunks are available."
+            )
+        elif claim_count and verified_count == claim_count:
+            st_module.success(
+                f"Citation references resolved for all {claim_count} claim(s). "
+                "This checks references, not factual entailment."
+            )
+        elif claim_count:
+            st_module.warning(
+                f"Citation references resolved for {verified_count} of "
+                f"{claim_count} claim(s). Unverified claims are listed below."
+            )
+        else:
+            st_module.info("No answer claims were available to verify.")
+
+        if coverage is not None:
+            st_module.caption(
+                f"Verified citation coverage: {verified_count}/{claim_count} "
+                f"({coverage:.0%})"
+            )
+        retrieval_sufficiency = evidence_report.get("retrieval_sufficiency")
+        if retrieval_sufficiency is None:
+            st_module.caption(
+                "Retrieval sufficiency was not assessed by the current query path."
+            )
+        else:
+            st_module.caption(
+                "Retrieval sufficiency assessment: "
+                + ("sufficient" if retrieval_sufficiency else "insufficient")
+            )
+
+        for claim in evidence_report.get("claims", []):
+            cited_ids = claim.get("validated_citation_ids", [])
+            reference_label = (
+                ", ".join(f"`{chunk_id}`" for chunk_id in cited_ids)
+                if cited_ids
+                else "Citation validation unavailable"
+                if not evidence_report.get("citation_validation_available")
+                else "No validated retrieved citation"
+            )
+            st_module.markdown(
+                f"- **{claim.get('verification_status', 'unverified').replace('_', ' ').title()}**: "
+                f"{claim.get('claim', '')}  \n"
+                f"  Evidence references: {reference_label}"
+            )
+            attribution_score = claim.get("attribution_score")
+            if attribution_score is not None:
+                st_module.caption(
+                    f"Best lexical match: {claim.get('mapped_source', 'Unknown source')} "
+                    f"({float(attribution_score):.0%} heuristic overlap; not semantic verification)"
+                )
+            if claim.get("unresolved_citations"):
+                st_module.caption(
+                    "Unresolved citation(s): "
+                    + ", ".join(f"`{item}`" for item in claim["unresolved_citations"])
+                )
+
+        if evidence_report.get("unverified_claims"):
+            st_module.warning(
+                "Claims without a validated retrieved citation are not "
+                "verified against the documents."
+            )
+
+        contradiction = evidence_report.get("contradiction_analysis") or {}
+        if contradiction.get("status") != "completed":
+            st_module.info(
+                "Contradiction analysis was not performed: "
+                + str(contradiction.get("reason", "no analysis result is available"))
+            )
+
+        if citation_report and citation_report.get("problems"):
+            for problem in citation_report["problems"]:
+                st_module.warning(str(problem))
+
     if not retrieved_chunks:
         return
+
+    st_module.markdown("### Retrieval Trace")
+    score_names = (
+        ("Dense", "dense_score"),
+        ("BM25", "bm25_score"),
+        ("RRF", "rrf_score"),
+        ("Cross-Encoder", "rerank_score"),
+    )
+    trace_chunks = retrieval_metadata or retrieved_chunks
+    for rank, chunk in enumerate(trace_chunks, start=1):
+        scores = []
+        for label, key in score_names:
+            value = chunk.get(key)
+            try:
+                formatted_value = f"{float(value):.3f}" if value is not None else "n/a"
+            except (TypeError, ValueError):
+                formatted_value = "n/a"
+            scores.append(f"{label}: {formatted_value}")
+        st_module.caption(
+            f"#{rank} `{chunk.get('chunk_id', 'unknown')}` — "
+            + " | ".join(scores)
+        )
 
     page_stats = get_document_page_stats(retrieved_chunks)
     summary_parts = []

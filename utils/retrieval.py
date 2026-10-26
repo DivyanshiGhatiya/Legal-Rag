@@ -1,4 +1,6 @@
+import logging
 import re
+import threading
 from rank_bm25 import BM25Okapi
 from sentence_transformers import CrossEncoder
 
@@ -13,6 +15,8 @@ CROSS_ENCODER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 
 _bm25_cache = {}
 _cross_encoder = None
+_cross_encoder_lock = threading.Lock()
+logger = logging.getLogger(__name__)
 
 
 def _tokenize(text):
@@ -22,7 +26,9 @@ def _tokenize(text):
 def _get_cross_encoder():
     global _cross_encoder
     if _cross_encoder is None:
-        _cross_encoder = CrossEncoder(CROSS_ENCODER_MODEL)
+        with _cross_encoder_lock:
+            if _cross_encoder is None:
+                _cross_encoder = CrossEncoder(CROSS_ENCODER_MODEL)
     return _cross_encoder
 
 
@@ -187,24 +193,67 @@ def retrieve(
     Full hybrid retrieval pipeline:
     dense (Chroma) + BM25 -> RRF fusion -> optional metadata filter -> cross-encoder rerank
     """
-    dense_results = dense_search(
-        query, top_k=top_k_dense, collection_name=collection_name,
-        persist_dir=persist_dir, document_filter=document_filter,
-    )
-    bm25_results = bm25_search(
-        query, top_k=top_k_bm25, collection_name=collection_name,
-        persist_dir=persist_dir, document_filter=document_filter, section_filter=section_filter,
-    )
+    try:
+        collection = get_collection(collection_name, persist_dir)
+        logger.info(
+            "pipeline_stage=retrieval_start collection=%s collection_count=%d "
+            "query=%r document_filter=%r section_filter=%r",
+            collection_name,
+            collection.count(),
+            query,
+            document_filter,
+            section_filter,
+        )
 
-    fused = rrf_fuse(dense_results, bm25_results, top_n=top_n_fused)
+        dense_results = dense_search(
+            query, top_k=top_k_dense, collection_name=collection_name,
+            persist_dir=persist_dir, document_filter=document_filter,
+        )
+        logger.info(
+            "pipeline_stage=dense_retrieval status=complete result_count=%d",
+            len(dense_results),
+        )
+        bm25_results = bm25_search(
+            query, top_k=top_k_bm25, collection_name=collection_name,
+            persist_dir=persist_dir, document_filter=document_filter, section_filter=section_filter,
+        )
+        logger.info(
+            "pipeline_stage=bm25_retrieval status=complete corpus_count=%d "
+            "result_count=%d",
+            len(_load_corpus(collection_name, persist_dir)["documents"]),
+            len(bm25_results),
+        )
 
-    if section_filter:
-        fused = [f for f in fused if _matches_filters(f.get("metadata", {}), None, section_filter)]
+        fused = rrf_fuse(dense_results, bm25_results, top_n=top_n_fused)
+        logger.info(
+            "pipeline_stage=rrf_fusion status=complete result_count=%d",
+            len(fused),
+        )
 
-    if use_reranker:
-        final = rerank(query, fused, top_n=top_n_final)
-    else:
-        final = fused[:top_n_final]
+        if section_filter:
+            fused = [
+                item
+                for item in fused
+                if _matches_filters(item.get("metadata", {}), None, section_filter)
+            ]
+
+        if use_reranker:
+            final = rerank(query, fused, top_n=top_n_final)
+            logger.info(
+                "pipeline_stage=cross_encoder status=complete result_count=%d",
+                len(final),
+            )
+        else:
+            final = fused[:top_n_final]
+            logger.info(
+                "pipeline_stage=cross_encoder status=skipped reason=disabled"
+            )
+    except Exception:
+        logger.exception(
+            "pipeline_stage=hybrid_retrieval status=failed collection=%s",
+            collection_name,
+        )
+        raise
 
     output = []
     for item in final:
@@ -216,11 +265,24 @@ def retrieve(
             "section": meta.get("section", ""),
             "subsection": meta.get("subsection", ""),
             "hierarchy": meta.get("hierarchy", ""),
+            "metadata": meta,
             "dense_score": item.get("dense_score"),
             "bm25_score": item.get("bm25_score"),
             "rrf_score": item.get("rrf_score"),
             "rerank_score": item.get("rerank_score"),
         })
+    logger.info(
+        "pipeline_stage=retrieval_final result_count=%d chunks=%s",
+        len(output),
+        [
+            {
+                "chunk_id": item.get("chunk_id"),
+                "source": item.get("document_name"),
+                "page": (item.get("metadata") or {}).get("page"),
+            }
+            for item in output
+        ],
+    )
     return output
 
 

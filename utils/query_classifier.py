@@ -162,7 +162,9 @@ def classify_query(query: str, model: str = GROQ_MODEL) -> dict:
             "source": "llm",
         }
     except Exception as exc:
-        logger.warning("Query classification fell back to rule analysis: %s", exc)
+        logger.exception(
+            "Query classification fell back to rule analysis: %s", exc
+        )
         return {**fallback, "fallback_reason": str(exc)}
 
 
@@ -219,7 +221,9 @@ def assess_evidence(query: str, search_query: str, hits: list[dict], model: str 
             "source": "llm",
         }
     except Exception as exc:
-        logger.warning("Evidence assessment failed; stopping further retrieval: %s", exc)
+        logger.exception(
+            "Evidence assessment failed; stopping further retrieval: %s", exc
+        )
         return {
             "sufficient": False,
             "next_query": "",

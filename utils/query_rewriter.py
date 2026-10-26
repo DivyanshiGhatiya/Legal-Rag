@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 
@@ -5,6 +6,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
+logger = logging.getLogger(__name__)
 
 GROQ_API_KEY_ENV = "GROQ_API_KEY"
 GROQ_BASE_URL = "https://api.groq.com/openai/v1"
@@ -64,5 +66,6 @@ Latest question:
         rewritten = (response.choices[0].message.content or "").strip()
         return rewritten or query
     except Exception:
+        logger.exception("pipeline_stage=query_rewrite status=failed")
         return query
        

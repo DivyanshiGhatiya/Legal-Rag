@@ -135,6 +135,34 @@ class QueryPipelineTests(unittest.TestCase):
             hit["chunk_id"] for hit in result["hits"]
         ])
 
+    def test_follow_up_rewrite_is_sent_to_retrieval(self):
+        with (
+            patch.object(app, "classify_query", return_value=self._classification("EASY")),
+            patch.object(app, "rewrite_query", return_value="termination notice period"),
+            patch.object(app, "retrieve", return_value=[_hit("c1", "Evidence")]) as retrieve,
+            patch.object(app, "generate_answer", return_value={"answer": "Answer"}),
+        ):
+            result = app.query_legal_documents(
+                "What about that?", conversation_history=[{"role": "user", "content": "termination"}]
+            )
+
+        self.assertTrue(result["success"])
+        self.assertEqual(retrieve.call_args.kwargs["query"], "termination notice period")
+
+    def test_empty_retrieval_is_explicit_and_skips_generation(self):
+        with (
+            patch.object(app, "classify_query", return_value=self._classification("EASY")),
+            patch.object(app, "rewrite_query", return_value="unanswerable question"),
+            patch.object(app, "retrieve", return_value=[]),
+            patch.object(app, "generate_answer") as generate,
+        ):
+            result = app.query_legal_documents("unanswerable question")
+
+        self.assertTrue(result["success"])
+        self.assertEqual(result["retrieval_status"], "no_results")
+        self.assertEqual(result["hits"], [])
+        generate.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()

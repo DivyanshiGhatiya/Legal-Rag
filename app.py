@@ -25,6 +25,7 @@ from utils.query_classifier import (
     classify_query,
     max_retrieval_rounds,
 )
+from utils.query_rewriter import rewrite_query
 from utils.pdf_processor import (
     clean_text,
     extract_text_and_metadata,
@@ -52,11 +53,17 @@ def _error_result(message: str, stage: str, **extra: Any) -> Dict[str, Any]:
 
 def process_document(file_name: str, file_bytes: bytes) -> Dict[str, Any]:
     """Validate, persist, chunk, and embed one uploaded PDF."""
+    document_hash = compute_file_hash(file_bytes)
+    logger.info(
+        "pipeline_stage=document_processing status=started file=%r bytes=%d",
+        file_name,
+        len(file_bytes),
+    )
     result: Dict[str, Any] = {
         "success": False,
         "error": None,
         "file_name": file_name,
-        "document_hash": compute_file_hash(file_bytes),
+        "document_hash": document_hash,
         "extraction": None,
         "cleaned_text": "",
         "chunks": [],
@@ -76,6 +83,7 @@ def process_document(file_name: str, file_bytes: bytes) -> Dict[str, Any]:
             output_file.write(file_bytes)
         result["paths"]["raw"] = raw_path
     except Exception as exc:
+        logger.exception("pipeline_stage=upload_save status=failed")
         return _error_result(str(exc), "upload_save", **result)
 
     try:
@@ -83,6 +91,7 @@ def process_document(file_name: str, file_bytes: bytes) -> Dict[str, Any]:
         extraction["file_name"] = file_name
         result["extraction"] = extraction
     except Exception as exc:
+        logger.exception("pipeline_stage=extraction status=failed")
         return _error_result(str(exc), "extraction", **result)
 
     try:
@@ -94,6 +103,7 @@ def process_document(file_name: str, file_bytes: bytes) -> Dict[str, Any]:
             output_dir=PROCESSED_DIR,
         )
     except Exception as exc:
+        logger.exception("pipeline_stage=cleaning_or_processed_save status=failed")
         return _error_result(str(exc), "cleaning_or_processed_save", **result)
 
     try:
@@ -106,12 +116,54 @@ def process_document(file_name: str, file_bytes: bytes) -> Dict[str, Any]:
         result["chunks"] = chunks
         if chunks:
             result["paths"]["chunked"] = save_chunked(chunks, output_dir=CHUNKED_DIR)
+        logger.info(
+            "pipeline_stage=chunking status=complete file=%r chunk_count=%d",
+            file_name,
+            len(chunks),
+        )
     except Exception as exc:
+        logger.exception("pipeline_stage=chunking status=failed")
         return _error_result(str(exc), "chunking", **result)
 
+    try:
+        collection = get_collection(DEFAULT_COLLECTION_NAME, DEFAULT_PERSIST_DIR)
+        existing_document = collection.get(
+            where={"source_name": file_name},
+            include=["metadatas"],
+        )
+        existing_metadata = existing_document.get("metadatas") or []
+        existing_hashes = {
+            (metadata or {}).get("source_hash")
+            for metadata in existing_metadata
+        }
+        if existing_metadata and existing_hashes != {document_hash}:
+            logger.info(
+                "pipeline_stage=document_reindex status=replacing file=%r "
+                "existing_chunk_count=%d",
+                file_name,
+                len(existing_metadata),
+            )
+            removal = remove_indexed_document(file_name)
+            if not removal["success"]:
+                raise RuntimeError(
+                    f"Could not replace the previously indexed '{file_name}': "
+                    f"{removal['error']}"
+                )
+    except Exception as exc:
+        logger.exception("pipeline_stage=document_replacement status=failed")
+        return _error_result(str(exc), "document_replacement", **result)
+
     if not chunks:
-        result["success"] = True
-        return result
+        logger.warning(
+            "pipeline_stage=chunking status=no_chunks file=%r",
+            file_name,
+        )
+        return _error_result(
+            "No text chunks were produced from this PDF. It may contain no "
+            "extractable text.",
+            "chunking",
+            **result,
+        )
 
     try:
         already_embedded = document_already_embedded(
@@ -139,7 +191,21 @@ def process_document(file_name: str, file_bytes: bytes) -> Dict[str, Any]:
                     collection_name=DEFAULT_COLLECTION_NAME,
                     persist_dir=DEFAULT_PERSIST_DIR,
                 )
+        collection_count = get_collection(
+            DEFAULT_COLLECTION_NAME, DEFAULT_PERSIST_DIR
+        ).count()
+        logger.info(
+            "pipeline_stage=embedding status=complete file=%r "
+            "new_chunk_count=%d collection=%s collection_count=%d "
+            "already_embedded=%s",
+            file_name,
+            result["embedded_count"],
+            DEFAULT_COLLECTION_NAME,
+            collection_count,
+            already_embedded,
+        )
     except Exception as exc:
+        logger.exception("pipeline_stage=embedding status=failed")
         return _error_result(str(exc), "embedding", **result)
 
     result["success"] = True
@@ -165,10 +231,21 @@ def query_legal_documents(
     if not query or not query.strip():
         return _error_result("Question cannot be empty.", "query_validation", **base)
 
+    logger.info("pipeline_stage=query status=submitted query=%r", query)
     classification = classify_query(query)
     base["classification"] = classification
     round_limit = max_retrieval_rounds(classification.get("difficulty", ""))
-    search_query = query
+    search_query = rewrite_query(query, conversation_history or [])
+    if not search_query or not search_query.strip():
+        search_query = query
+    logger.info(
+        "pipeline_stage=query_rewrite status=complete query=%r retrieval_query=%r "
+        "classification=%s difficulty=%s",
+        query,
+        search_query,
+        classification.get("source", "unknown"),
+        classification.get("difficulty", "unknown"),
+    )
     hits_by_id = {}
     round_hit_batches = []
 
@@ -185,6 +262,11 @@ def query_legal_documents(
             )
         except Exception as exc:
             if not hits_by_id:
+                logger.exception(
+                    "pipeline_stage=retrieval status=failed round=%d query=%r",
+                    round_number,
+                    search_query,
+                )
                 return _error_result(str(exc), "retrieval", **base)
             logger.exception("A later retrieval round failed; retaining prior evidence.")
             base["retrieval_warning"] = str(exc)
@@ -192,6 +274,13 @@ def query_legal_documents(
 
         base["retrieval_rounds"].append(
             {"round": round_number, "query": search_query, "hit_count": len(round_hits)}
+        )
+        logger.info(
+            "pipeline_stage=retrieval status=complete round=%d query=%r "
+            "result_count=%d",
+            round_number,
+            search_query,
+            len(round_hits),
         )
         round_hit_batches.append(round_hits)
         for hit in round_hits:
@@ -230,23 +319,48 @@ def query_legal_documents(
         search_query = next_query
 
     if not base["hits"]:
+        base["retrieval_status"] = "no_results"
+        logger.warning(
+            "pipeline_stage=retrieval status=no_results query=%r document_filter=%r",
+            search_query,
+            document_filter,
+        )
         base["success"] = True
         base["answer"] = {
             "answer": "No relevant context was retrieved for this question from the currently indexed documents.",
             "used_chunk_ids": [],
+            "citation_report": None,
         }
         return base
 
     try:
         # Generation receives history only to resolve references; retrieval stays document-grounded.
+        logger.info(
+            "pipeline_stage=generation status=started query=%r chunk_count=%d",
+            query,
+            len(base["hits"]),
+        )
         base["answer"] = generate_answer(
             query,
             base["hits"],
             conversation_history=conversation_history,
         )
     except Exception as exc:
+        logger.exception("pipeline_stage=generation status=failed")
         return _error_result(str(exc), "generation", **base)
 
+    base["retrieval_status"] = "results_found"
+    logger.info(
+        "pipeline_stage=generation status=complete final_chunks=%s",
+        [
+            {
+                "chunk_id": hit.get("chunk_id"),
+                "source": hit.get("document_name"),
+                "page": hit.get("page") or (hit.get("metadata") or {}).get("page"),
+            }
+            for hit in base["hits"]
+        ],
+    )
     base["success"] = True
     return base
 

@@ -48,14 +48,20 @@ def document_already_embedded(document_name, document_hash, collection_name=DEFA
         with open(manifest_path, "r", encoding="utf-8") as f:
             data = json.load(f)
         docs = data.get("documents", []) if isinstance(data, dict) else data
+        if document_hash:
+            return any(
+                entry.get("source_hash") == document_hash
+                and entry.get("source_name") == document_name
+                for entry in docs
+            )
         for entry in docs:
-            if document_hash and entry.get("source_hash") == document_hash:
-                return True
             if document_name and entry.get("source_name") == document_name:
                 return True
         return False
-    except Exception:
-        return False
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(
+            f"Unable to read indexed-document manifest '{manifest_path}'."
+        ) from exc
 
 
 def get_chroma_client(persist_dir=DEFAULT_PERSIST_DIR):
