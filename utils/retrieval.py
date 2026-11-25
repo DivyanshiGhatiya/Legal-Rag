@@ -266,6 +266,8 @@ def retrieve(
             "subsection": meta.get("subsection", ""),
             "hierarchy": meta.get("hierarchy", ""),
             "metadata": meta,
+            "page": meta.get("page"),
+            "page_numbers": meta.get("page_numbers", ""),
             "dense_score": item.get("dense_score"),
             "bm25_score": item.get("bm25_score"),
             "rrf_score": item.get("rrf_score"),

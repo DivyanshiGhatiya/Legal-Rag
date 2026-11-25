@@ -523,6 +523,7 @@ def create_chunks_hierarchical(
     # Create chunks
     all_chunks: List[Dict[str, Any]] = []
     chunk_counter = 1
+    current_page_number = 0
     
     for block_text, hierarchy, section_number in blocks:
         # Choose chunking strategy
@@ -537,6 +538,19 @@ def create_chunks_hierarchical(
             chunks_to_add = _sliding_window(block_text, chunk_size, overlap)
         
         for chunk_text in chunks_to_add:
+            page_numbers = sorted(
+                {
+                    int(page_number)
+                    for page_number in re.findall(
+                        r"\[PAGE\s+(\d+)\]", chunk_text, re.IGNORECASE
+                    )
+                }
+            )
+            if page_numbers:
+                current_page_number = max(current_page_number, page_numbers[-1])
+            elif current_page_number:
+                page_numbers = [current_page_number]
+
             chunk_id = f"{document_id}_CHUNK_{chunk_counter:04d}"
             chunk_counter += 1
             
@@ -550,6 +564,14 @@ def create_chunks_hierarchical(
             
             # Extract metadata
             legal_metadata = _extract_legal_metadata(chunk_text, hierarchy)
+            page_metadata = (
+                {
+                    "page": page_numbers[0],
+                    "page_numbers": ",".join(str(page) for page in page_numbers),
+                }
+                if page_numbers
+                else {}
+            )
             
             chunk_obj = {
                 "chunk_id": chunk_id,
@@ -560,11 +582,13 @@ def create_chunks_hierarchical(
                 "chunk_index": chunk_counter - 1,
                 "chunk_length": len(chunk_text),
                 "text": chunk_text,
+                **page_metadata,
                 "metadata": {
                     **doc_meta,
                     "hierarchy": hierarchy,
                     "section_number": section_number,
                     "hierarchy_depth": len(hierarchy),
+                    **page_metadata,
                     **legal_metadata,
                 },
             }

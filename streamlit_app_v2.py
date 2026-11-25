@@ -1,5 +1,7 @@
 import hashlib
+import html
 import logging
+import re
 import threading
 import time
 from typing import Any, Dict
@@ -19,6 +21,7 @@ from app import (
     remove_indexed_document,
 )
 from explainability import (
+    extract_and_map_page_number,
     render_explainability_ui,
 )
 from utils.explainability_data import build_explainability_data
@@ -56,13 +59,57 @@ PAGE_TITLES = {
     "Documents": "Documents",
     "Legal Chat": "Legal Chat",
 }
+ALL_DOCUMENTS_LABEL = "All indexed documents"
 
 
 CUSTOM_CSS = """
 <style>
+    :root {
+        --legal-background: #FBF9F5;
+        --legal-surface: #FFFFFF;
+        --legal-text: #121110;
+        --legal-muted: #5A5148;
+        --legal-border: rgba(18,17,16,0.12);
+        --legal-border: color-mix(in srgb, var(--legal-text) 16%, transparent);
+        --legal-accent: #EAE3D2;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+            --legal-background: #111820;
+            --legal-surface: #1B2631;
+            --legal-text: #F1F4F7;
+            --legal-muted: #C0CBD5;
+            --legal-border: rgba(255,255,255,0.16);
+            --legal-accent: #2A3948;
+        }
+    }
+
+    :root[data-theme="dark"],
+    body[data-theme="dark"],
+    [data-theme="dark"] {
+        --legal-background: #111820;
+        --legal-surface: #1B2631;
+        --legal-text: #F1F4F7;
+        --legal-muted: #C0CBD5;
+        --legal-border: rgba(255,255,255,0.16);
+        --legal-accent: #2A3948;
+    }
+
+    :root[data-theme="light"],
+    body[data-theme="light"],
+    [data-theme="light"] {
+        --legal-background: #FBF9F5;
+        --legal-surface: #FFFFFF;
+        --legal-text: #121110;
+        --legal-muted: #5A5148;
+        --legal-border: rgba(18,17,16,0.12);
+        --legal-accent: #EAE3D2;
+    }
+
     .stApp {
-        background: #FBF9F5;
-        color: #121110;
+        background: var(--legal-background);
+        color: var(--legal-text);
     }
 
     [data-testid="stSidebar"] {
@@ -170,7 +217,7 @@ CUSTOM_CSS = """
         font-size: clamp(2rem, 3vw, 3rem);
         font-weight: 700;
         margin: 0 0 0.5rem 0;
-        color: #121110;
+        color: var(--legal-text);
     }
 
     .content-wrap {
@@ -181,8 +228,9 @@ CUSTOM_CSS = """
     .panel-card,
     .callout-card,
     .step-card {
-        background: rgba(255,255,255,0.8);
-        border: 1px solid rgba(18,17,16,0.08);
+        background: var(--legal-surface);
+        color: var(--legal-text);
+        border: 1px solid var(--legal-border);
         border-radius: 1.1rem;
         box-shadow: 0 8px 24px rgba(18,17,16,0.03);
     }
@@ -193,7 +241,7 @@ CUSTOM_CSS = """
     }
 
     .metric-label {
-        color: rgba(18,17,16,0.68);
+        color: var(--legal-muted);
         font-size: 0.78rem;
         letter-spacing: 0.08em;
         text-transform: uppercase;
@@ -206,11 +254,11 @@ CUSTOM_CSS = """
         font-weight: 700;
         margin: 0.6rem 0 0.25rem;
         font-family: Georgia, "Times New Roman", serif;
-        color: #121110;
+        color: var(--legal-text);
     }
 
     .metric-meta {
-        color: rgba(18,17,16,0.7);
+        color: var(--legal-muted);
         font-size: 0.88rem;
     }
 
@@ -224,13 +272,13 @@ CUSTOM_CSS = """
         font-family: Georgia, "Times New Roman", serif;
         font-size: 1.35rem;
         margin: 0 0 0.8rem;
-        color: #121110;
+        color: var(--legal-text);
     }
 
     .table-wrap {
         overflow: hidden;
         border-radius: 0.8rem;
-        border: 1px solid rgba(18,17,16,0.08);
+        border: 1px solid var(--legal-border);
     }
 
     .pill {
@@ -239,8 +287,8 @@ CUSTOM_CSS = """
         justify-content: center;
         border-radius: 999px;
         padding: 0.2rem 0.6rem;
-        background: #EAE3D2;
-        color: #121110;
+        background: var(--legal-accent);
+        color: var(--legal-text);
         font-size: 0.68rem;
         letter-spacing: 0.08em;
         text-transform: uppercase;
@@ -250,19 +298,20 @@ CUSTOM_CSS = """
 
     .pill.success {
         background: rgba(96, 177, 130, 0.18);
-        color: #1E5A3A;
+        color: var(--legal-text);
     }
 
     .callout-card {
         padding: 1.15rem 1.2rem;
-        background: linear-gradient(135deg, rgba(234,227,210,0.65), rgba(255,255,255,0.85));
-        border: 1px solid rgba(18,17,16,0.08);
+        background: var(--legal-surface);
+        border: 1px solid var(--legal-border);
         margin-top: 1.25rem;
     }
 
     .system-card {
-        background: rgba(255,255,255,0.8);
-        border: 1px solid rgba(18,17,16,0.08);
+        background: var(--legal-surface);
+        color: var(--legal-text);
+        border: 1px solid var(--legal-border);
         border-radius: 1.1rem;
         padding: 1rem 1.1rem;
         margin-top: 1.25rem;
@@ -272,7 +321,7 @@ CUSTOM_CSS = """
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border-bottom: 1px solid rgba(18,17,16,0.06);
+        border-bottom: 1px solid var(--legal-border);
         padding: 0.7rem 0;
     }
 
@@ -301,43 +350,43 @@ CUSTOM_CSS = """
     [data-testid="stFileUploader"] section,
     [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] {
         background: transparent !important;
-        color: #121110 !important;
-        border-color: rgba(18,17,16,0.16) !important;
+        color: var(--legal-text) !important;
+        border-color: var(--legal-border) !important;
         box-shadow: none !important;
     }
 
     [data-testid="stFileUploader"] section small,
     [data-testid="stFileUploader"] section span,
     [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] span {
-        color: #5A5148 !important;
+        color: var(--legal-muted) !important;
     }
 
     [data-testid="stFileUploader"] button {
-        background: #EAE3D2 !important;
-        color: #121110 !important;
-        border-color: rgba(18,17,16,0.16) !important;
+        background: var(--legal-accent) !important;
+        color: var(--legal-text) !important;
+        border-color: var(--legal-border) !important;
     }
 
     /* Keep remaining chat controls on the light surface. */
     [data-testid="stButton"] button {
-        background: #FFFFFF !important;
-        color: #121110 !important;
-        border: 1px solid rgba(18,17,16,0.16) !important;
+        background: var(--legal-surface) !important;
+        color: var(--legal-text) !important;
+        border: 1px solid var(--legal-border) !important;
         box-shadow: none !important;
     }
 
     [data-testid="stButton"] button:hover {
-        background: #EAE3D2 !important;
-        color: #121110 !important;
+        background: var(--legal-accent) !important;
+        color: var(--legal-text) !important;
     }
 
     /* Keep retrieved-context expanders visually consistent with the light UI. */
     [data-testid="stExpander"] details,
     [data-testid="stExpander"] summary,
     [data-testid="stExpander"] [data-testid="stExpanderDetails"] {
-        background: #FFFFFF !important;
-        color: #121110 !important;
-        border-color: rgba(18,17,16,0.12) !important;
+        background: var(--legal-surface) !important;
+        color: var(--legal-text) !important;
+        border-color: var(--legal-border) !important;
         box-shadow: none !important;
     }
 
@@ -360,8 +409,8 @@ CUSTOM_CSS = """
         border-radius: 50%;
         align-items: center;
         justify-content: center;
-        background: #EAE3D2;
-        color: #121110;
+        background: var(--legal-accent);
+        color: var(--legal-text);
         font-family: "SFMono-Regular", Consolas, monospace;
         font-weight: 700;
     }
@@ -370,25 +419,25 @@ CUSTOM_CSS = """
     [data-testid="stTextInput"] > div,
     [data-testid="stTextInput"] > div > div,
     [data-testid="stTextInput"] input {
-        background: #FFFFFF !important;
-        border-color: rgba(18,17,16,0.16) !important;
+        background: var(--legal-surface) !important;
+        border-color: var(--legal-border) !important;
     }
 
     [data-testid="stTextInput"] input {
-        color: #7A3E00 !important;
-        caret-color: #7A3E00 !important;
+        color: var(--legal-text) !important;
+        caret-color: var(--legal-text) !important;
     }
 
     [data-testid="stTextInput"] input::placeholder {
-        color: rgba(122, 62, 0, 0.58) !important;
+        color: var(--legal-muted) !important;
     }
 
     /* Keep Streamlit's sticky chat area aligned with the light application canvas. */
     [data-testid="stBottom"],
     [data-testid="stBottom"] > div,
     [data-testid="stBottom"] > div > div {
-        background-color: #FBF9F5 !important;
-        border-top: 1px solid rgba(18, 17, 16, 0.08) !important;
+        background-color: var(--legal-background) !important;
+        border-top: 1px solid var(--legal-border) !important;
         box-shadow: none !important;
     }
 
@@ -396,33 +445,34 @@ CUSTOM_CSS = """
     [data-testid="stChatInput"],
     [data-testid="stChatInput"] > div,
     [data-testid="stChatInput"] textarea {
-        background-color: #FFFFFF !important;
-        border: 1px solid rgba(18, 17, 16, 0.16) !important;
+        background-color: var(--legal-surface) !important;
+        border: 1px solid var(--legal-border) !important;
         border-radius: 0.85rem !important;
         box-shadow: 0 4px 12px rgba(18, 17, 16, 0.04) !important;
     }
 
     [data-testid="stChatInput"] textarea {
-        color: #121110 !important;
-        caret-color: #121110 !important;
+        color: var(--legal-text) !important;
+        caret-color: var(--legal-text) !important;
     }
 
     [data-testid="stChatInput"] textarea::placeholder {
-        color: #6B655F !important;
+        color: var(--legal-muted) !important;
         opacity: 1 !important;
     }
 
     [data-testid="stChatInput"] button {
-        background-color: #EAE3D2 !important;
-        color: #121110 !important;
+        background-color: var(--legal-accent) !important;
+        color: var(--legal-text) !important;
         border: none !important;
         box-shadow: none !important;
     }
 
     /* Style all chat message containers to match the light theme. */
     [data-testid="stChatMessage"] {
-        background-color: #FFFFFF !important;
-        border: 1px solid rgba(18, 17, 16, 0.08) !important;
+        background-color: var(--legal-surface) !important;
+        color: var(--legal-text) !important;
+        border: 1px solid var(--legal-border) !important;
         border-radius: 0.85rem !important;
         padding: 0.8rem 1rem !important;
         margin-bottom: 0.8rem !important;
@@ -431,14 +481,14 @@ CUSTOM_CSS = """
     /* Ensure text inside both user and assistant chat bubbles is visible. */
     [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"],
     [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p {
-        color: #121110 !important;
+        color: var(--legal-text) !important;
         font-size: 0.95rem !important;
         line-height: 1.5 !important;
     }
 
     /* Give user messages a subtle warm tint. */
     [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
-        background-color: #F4F1ED !important;
+        background-color: var(--legal-background) !important;
     }
 
     /* Keep retrieved legal text visible without requiring text selection. */
@@ -448,15 +498,16 @@ CUSTOM_CSS = """
     [data-testid="stExpander"] [data-testid="stMarkdownContainer"],
     [data-testid="stExpander"] [data-testid="stMarkdownContainer"] p,
     [data-testid="stExpander"] [data-testid="stMarkdownContainer"] li {
-        color: #121110 !important;
+        color: var(--legal-text) !important;
     }
 
     .chat-message {
         border-radius: 1rem;
         padding: 0.8rem 0.9rem;
         margin-bottom: 0.75rem;
-        background: rgba(255,255,255,0.75);
-        border: 1px solid rgba(18,17,16,0.08);
+        background: var(--legal-surface);
+        color: var(--legal-text);
+        border: 1px solid var(--legal-border);
     }
 
     .citation-list {
@@ -467,8 +518,8 @@ CUSTOM_CSS = """
     }
 
     .citation {
-        background: #EAE3D2;
-        color: #121110;
+        background: var(--legal-accent);
+        color: var(--legal-text);
         border-radius: 999px;
         padding: 0.25rem 0.5rem;
         font-family: "SFMono-Regular", Consolas, monospace;
@@ -478,9 +529,9 @@ CUSTOM_CSS = """
 
     .verified-citation-card,
     .raw-context-card {
-        background: #FFFFFF;
-        color: #121110;
-        border: 1px solid rgba(18,17,16,0.1);
+        background: var(--legal-surface);
+        color: var(--legal-text);
+        border: 1px solid var(--legal-border);
         border-radius: 0.75rem;
         padding: 0.75rem 0.85rem;
         min-height: 4.6rem;
@@ -488,7 +539,7 @@ CUSTOM_CSS = """
     }
 
     .verified-citation-label {
-        color: rgba(18,17,16,0.62);
+        color: var(--legal-muted);
         font-size: 0.72rem;
         text-transform: uppercase;
         letter-spacing: 0.06em;
@@ -499,6 +550,41 @@ CUSTOM_CSS = """
         font-family: Georgia, "Times New Roman", serif;
         font-size: 1.05rem;
         font-weight: 700;
+    }
+
+    [data-testid="stWidgetLabel"],
+    [data-testid="stCaptionContainer"],
+    [data-testid="stMarkdownContainer"] {
+        color: var(--legal-text);
+    }
+
+    [data-testid="stSelectbox"] [data-baseweb="select"] > div,
+    [data-baseweb="popover"],
+    [data-baseweb="menu"],
+    [data-baseweb="option"] {
+        background-color: var(--legal-surface) !important;
+        color: var(--legal-text) !important;
+        border-color: var(--legal-border) !important;
+    }
+
+    [data-testid="stSelectbox"] [data-baseweb="select"] input {
+        color: var(--legal-text) !important;
+    }
+
+    [data-testid="stFileUploader"] [data-testid="stFileUploaderDropzoneInstructions"] {
+        color: var(--legal-text) !important;
+    }
+
+    .stApp [data-testid="stMarkdownContainer"] code,
+    .stApp [data-testid="stMarkdownContainer"] pre {
+        color: var(--legal-text);
+        background: var(--legal-background);
+        overflow-wrap: anywhere;
+    }
+
+    .stApp [data-testid="stExpander"] {
+        border-color: var(--legal-border);
+        border-radius: 0.85rem;
     }
 </style>
 """
@@ -551,10 +637,9 @@ def sidebar_ui() -> str:
 def render_metric_cards() -> None:
     # Fetch on every rerun so uploads and index changes appear immediately.
     corpus_metrics = get_corpus_metrics()
-    indexed_documents = list_indexed_documents()
     database_ready = not corpus_metrics.get("error")
     cards = [
-        ("Indexed Documents", str(len(indexed_documents)), "Live corpus"),
+        ("Indexed Documents", str(corpus_metrics.get("indexed_documents", 0)), "Live corpus"),
         ("Indexed Chunks", str(corpus_metrics.get("indexed_chunks", 0)), "Live vector store"),
         ("Database", "Connected" if database_ready else "Unavailable", "ChromaDB status"),
         ("Updated", "Live", "Refreshes on rerun"),
@@ -579,7 +664,7 @@ def overview_page() -> None:
     st.markdown("<div class='page-title'>Overview</div>", unsafe_allow_html=True)
     render_metric_cards()
 
-    indexed_documents = list_indexed_documents()
+    indexed_documents = _list_indexed_documents_ui()
     st.markdown(
         "<div class='section-heading' style='margin-top: 1.5rem;'>Indexed Documents</div>",
         unsafe_allow_html=True,
@@ -588,18 +673,19 @@ def overview_page() -> None:
         for document_name in indexed_documents:
             st.markdown(
                 f"<div class='callout-card' style='margin-top:0.55rem; padding:0.75rem 1rem;'>"
-                f"<strong>{document_name}</strong><span class='pill success' style='float:right;'>INDEXED</span></div>",
+                f"<strong>{html.escape(document_name)}</strong>"
+                f"<span class='pill success' style='float:right;'>INDEXED</span></div>",
                 unsafe_allow_html=True,
             )
     else:
         st.info("No indexed documents yet. Upload a PDF from Documents to begin.")
 
 
-def render_upload_zone() -> None:
+def render_upload_zone() -> Any:
     st.markdown(
         """
-        <div style="font-family: Georgia, 'Times New Roman', serif; font-size: 1.4rem; margin-bottom: 0.45rem;">§01 Upload Documents</div>
-        <div style="color: rgba(18,17,16,0.72); margin-bottom: 0.8rem;">PDF only · up to 200 MB per file</div>
+        <div style="font-family: Georgia, 'Times New Roman', serif; font-size: 1.4rem; margin-bottom: 0.45rem; color: var(--legal-text);">§01 Upload Documents</div>
+        <div style="color: var(--legal-muted); margin-bottom: 0.8rem;">PDF only · up to 200 MB per file</div>
         """,
         unsafe_allow_html=True,
     )
@@ -615,6 +701,15 @@ def render_upload_zone() -> None:
 def process_uploaded_pdf(file_obj: Any) -> Dict[str, Any]:
     # The controller owns validation through embedding; the UI only supplies upload data.
     return process_document(file_obj.name, file_obj.getvalue())
+
+
+def _list_indexed_documents_ui() -> list[str]:
+    try:
+        return list_indexed_documents()
+    except RuntimeError as exc:
+        logger.exception("pipeline_stage=document_listing_ui status=failed")
+        st.error(f"Unable to load indexed documents: {exc}")
+        return []
 
 
 def render_pipeline_status(result: Dict[str, Any]) -> None:
@@ -650,7 +745,7 @@ def render_pipeline_status(result: Dict[str, Any]) -> None:
                         <span class="pill {'success' if step['done'] else ''}">{step['status']}</span>
                     </div>
                     <div style="font-family: Georgia, 'Times New Roman', serif; font-size: 1.15rem; margin-bottom: 0.4rem;">{step['title']}</div>
-                    <div style="color: rgba(18,17,16,0.72); font-size: 0.88rem; line-height: 1.5;">{step['description']}</div>
+                    <div style="color: var(--legal-muted); font-size: 0.88rem; line-height: 1.5;">{step['description']}</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -661,31 +756,6 @@ def documents_page() -> None:
     st.markdown("<div class='page-title'>Documents</div>", unsafe_allow_html=True)
 
     uploaded_file = render_upload_zone()
-    indexed_documents = list_indexed_documents()
-    st.caption(f"Indexed documents: {len(indexed_documents)}")
-
-    if indexed_documents:
-        st.markdown(
-            "<div class='section-heading' style='margin-top: 1.5rem;'>Manage Indexed Documents</div>",
-            unsafe_allow_html=True,
-        )
-        selected_document = st.selectbox(
-            "Select an indexed document to remove",
-            options=indexed_documents,
-            key="selected_document_to_remove",
-        )
-        if st.button("Remove Selected Document", key="remove_selected_document"):
-            removal = remove_indexed_document(selected_document)
-            if removal["success"]:
-                st.session_state.pop("last_upload", None)
-                st.session_state.pop("last_pipeline_data", None)
-                st.success(
-                    f"Removed {selected_document} and {removal['deleted_count']} indexed chunks."
-                )
-                st.rerun()
-            else:
-                st.error(f"Document removal failed: {removal['error']}")
-
     pipeline_data: Dict[str, Any] = {
         "success": False,
         "error": {"stage": "waiting", "message": "No document uploaded."},
@@ -696,34 +766,77 @@ def documents_page() -> None:
     }
 
     if uploaded_file is not None:
+        file_bytes = uploaded_file.getvalue()
         upload_key = (
             f"{uploaded_file.name}:"
-            f"{hashlib.sha256(uploaded_file.getvalue()).hexdigest()}"
+            f"{hashlib.sha256(file_bytes).hexdigest()}"
         )
         if st.session_state.get("processed_upload_key") != upload_key:
-            st.session_state.pop("last_upload", None)
-            with st.spinner("Processing uploaded PDF…"):
+            with st.spinner(
+                "Validating the PDF, extracting pages, creating chunks, and indexing…"
+            ):
                 pipeline_data = process_uploaded_pdf(uploaded_file)
+            st.session_state["last_pipeline_data"] = pipeline_data
             if pipeline_data["success"]:
                 st.session_state["processed_upload_key"] = upload_key
-            st.session_state["last_pipeline_data"] = pipeline_data
+                st.session_state["last_upload"] = {
+                    "file_name": uploaded_file.name,
+                    "chunk_count": len(pipeline_data["chunks"]),
+                    "embedded_count": pipeline_data["embedded_count"],
+                }
+                st.session_state["selected_document_to_remove"] = uploaded_file.name
+                st.session_state["pending_chat_document_filter"] = uploaded_file.name
+                st.rerun()
         else:
             pipeline_data = st.session_state.get("last_pipeline_data", pipeline_data)
 
         if pipeline_data["success"]:
             st.success(f"Processed {uploaded_file.name} successfully.")
-            st.caption(f"Pages extracted: {pipeline_data['extraction']['num_pages']}")
+            st.caption(
+                f"Pages extracted: "
+                f"{(pipeline_data.get('extraction') or {}).get('num_pages', 0)}"
+            )
             st.caption(f"Chunk count: {len(pipeline_data['chunks'])}")
             st.caption(f"Embedded chunks: {pipeline_data['embedded_count']}")
-            # Keep the latest upload available to the chat page across reruns.
-            st.session_state["last_upload"] = {
-                "file_name": uploaded_file.name,
-                "chunk_count": len(pipeline_data["chunks"]),
-                "embedded_count": pipeline_data["embedded_count"],
-            }
         else:
             error = pipeline_data.get("error") or {}
-            st.error(f"{error.get('stage', 'processing').title()} failed: {error.get('message', 'Unknown error')}")
+            st.error(
+                f"{error.get('stage', 'processing').title()} failed: "
+                f"{error.get('message', 'Unknown error')}"
+            )
+
+    indexed_documents = _list_indexed_documents_ui()
+    st.caption(f"Indexed documents: {len(indexed_documents)}")
+
+    if indexed_documents:
+        st.markdown(
+            "<div class='section-heading' style='margin-top: 1.5rem;'>"
+            "Manage Indexed Documents</div>",
+            unsafe_allow_html=True,
+        )
+        if st.session_state.get("selected_document_to_remove") not in indexed_documents:
+            st.session_state["selected_document_to_remove"] = indexed_documents[0]
+        selected_document = st.selectbox(
+            "Select an indexed document to remove",
+            options=indexed_documents,
+            key="selected_document_to_remove",
+        )
+        if st.button("Remove Selected Document", key="remove_selected_document"):
+            removal = remove_indexed_document(selected_document)
+            if removal["success"]:
+                if (st.session_state.get("last_upload") or {}).get("file_name") == selected_document:
+                    st.session_state.pop("last_upload", None)
+                if st.session_state.get("chat_document_filter") == selected_document:
+                    st.session_state["chat_document_filter"] = "All indexed documents"
+                st.session_state.pop("last_pipeline_data", None)
+                st.success(
+                    f"Removed {selected_document} and {removal['deleted_count']} indexed chunks."
+                )
+                st.rerun()
+            else:
+                st.error(f"Document removal failed: {removal['error']}")
+    else:
+        st.info("No indexed documents yet. Upload a PDF to make it available for chat.")
 
     st.markdown("<div class='section-heading' style='margin-top: 1.5rem;'>§02 Ingestion Pipeline</div>", unsafe_allow_html=True)
     render_pipeline_status(pipeline_data)
@@ -740,7 +853,7 @@ def chat_page() -> None:
     if last_upload:
         st.markdown(
             f"<div class='callout-card'><strong>Uploaded document:</strong> "
-            f"{last_upload['file_name']} &nbsp;·&nbsp; "
+            f"{html.escape(last_upload['file_name'])} &nbsp;·&nbsp; "
             f"{last_upload['chunk_count']} chunks indexed</div>",
             unsafe_allow_html=True,
         )
@@ -748,12 +861,27 @@ def chat_page() -> None:
     if "chat_history" not in st.session_state:
         st.session_state["chat_history"] = []
 
-    last_upload = st.session_state.get("last_upload")
-    restrict_to_upload = bool(last_upload) and st.checkbox(
-        "Search only the uploaded document",
-        value=True,
-        key="restrict_to_uploaded_document",
+    indexed_documents = _list_indexed_documents_ui()
+    document_options = [ALL_DOCUMENTS_LABEL, *indexed_documents]
+    pending_filter = st.session_state.pop("pending_chat_document_filter", None)
+    if pending_filter in indexed_documents:
+        st.session_state["chat_document_filter"] = pending_filter
+    selected_filter = st.session_state.get("chat_document_filter")
+    default_filter = (
+        last_upload["file_name"]
+        if last_upload and last_upload.get("file_name") in indexed_documents
+        else ALL_DOCUMENTS_LABEL
     )
+    if selected_filter not in document_options:
+        st.session_state["chat_document_filter"] = default_filter
+    selected_filter = st.selectbox(
+        "Search documents",
+        options=document_options,
+        key="chat_document_filter",
+        help="Choose one indexed document or search the full indexed collection.",
+    )
+    if not indexed_documents:
+        st.caption("Upload a PDF from Documents to enable document-grounded chat.")
 
     for message in st.session_state["chat_history"]:
         with st.chat_message(message["role"]):
@@ -761,7 +889,6 @@ def chat_page() -> None:
                 st.markdown(message.get("content", ""))
             else:
                 chunks = message.get("chunks", [])
-                citations = message.get("citations", [])
                 explainability = message.get("explainability")
                 citation_report = (
                     explainability.get("citation_report")
@@ -775,6 +902,7 @@ def chat_page() -> None:
                 )
                 validated_id_set = {str(chunk_id) for chunk_id in validated_ids}
 
+                st.markdown("#### Answer")
                 st.markdown(message["content"])
                 if message.get("retrieval_status") == "no_results":
                     st.warning(
@@ -796,6 +924,7 @@ def chat_page() -> None:
                             claim_attributions=explainability["claim_attributions"],
                             evidence_report=explainability["evidence_report"],
                             show_answer=False,
+                            retrieval_rounds=message.get("retrieval_rounds", []),
                         )
                     finally:
                         logger.info(
@@ -815,12 +944,6 @@ def chat_page() -> None:
 
                 if chunks:
                     st.success(f"✅ Found {len(chunks)} relevant chunks")
-                if citation_report:
-                    if citation_report.get("is_valid"):
-                        st.success("✅ Citation validation passed")
-                    else:
-                        st.warning("Citation validation found issues.")
-
                 if validated_ids:
                     verified_labels = ", ".join(
                         f"`{chunk_id}`" for chunk_id in validated_ids
@@ -832,26 +955,29 @@ def chat_page() -> None:
                         if str(chunk.get("chunk_id")) in validated_id_set
                     ]
                     if cited_chunks:
-                        st.markdown("**Validated Citations:**")
-                        citation_columns = st.columns(len(cited_chunks))
-                        for rank, (column, chunk) in enumerate(
-                            zip(citation_columns, cited_chunks), start=1
-                        ):
+                        st.markdown("#### Verified citation references")
+                        for rank, chunk in enumerate(cited_chunks, start=1):
                             metadata = chunk.get("metadata") or {}
-                            page = chunk.get("page") or metadata.get("page", "N/A")
-                            with column:
-                                st.markdown(
-                                    f"""
-                                    <div class="verified-citation-card">
-                                        <div class="verified-citation-label">📄 Source reference #{rank}</div>
-                                        <div class="verified-citation-page">Page {page}</div>
+                            _, page_label = extract_and_map_page_number(chunk)
+                            source_name = html.escape(
+                                chunk.get("document_name")
+                                or metadata.get("source_name")
+                                or "Unknown document"
+                            )
+                            st.markdown(
+                                f"""
+                                <div class="verified-citation-card">
+                                    <div class="verified-citation-label">
+                                        Source reference #{rank} ·
+                                        {html.escape(str(chunk.get('chunk_id', 'unknown')))} ·
+                                        {source_name}
                                     </div>
-                                    """,
-                                    unsafe_allow_html=True,
-                                )
+                                    <div class="verified-citation-page">{html.escape(page_label)}</div>
+                                </div>
+                                """,
+                                unsafe_allow_html=True,
+                            )
 
-                if citations:
-                    st.markdown("<div class=\"citation-list\">" + "".join(f"<span class='citation'>{cid}</span>" for cid in citations) + "</div>", unsafe_allow_html=True)
                 if chunks:
                     st.markdown("### 🔍 Retrieved Chunks")
                     for rank, chunk in enumerate(chunks, start=1):
@@ -869,16 +995,30 @@ def chat_page() -> None:
                             )
                         )
                         metadata = chunk.get("metadata") or {}
-                        page = chunk.get("page") or metadata.get("page", "N/A")
+                        _, page_label = extract_and_map_page_number(chunk)
+                        section = html.escape(
+                            str(
+                                chunk.get("section")
+                                or metadata.get("section")
+                                or "(none)"
+                            )
+                        )
                         with st.expander(
                             f"#{rank} • Rerank: {rerank_label} • 📄 {file_name}",
                             expanded=False,
                         ):
                             st.caption(
-                                f"Page: {page} | Section: "
-                                f"{chunk.get('section') or metadata.get('section', '(none)')}"
+                                f"{page_label} | Section: {section} | "
+                                f"Chunk: {chunk.get('chunk_id', 'unknown')}"
                             )
-                            st.markdown(chunk.get("text", ""))
+                            st.markdown(
+                                re.sub(
+                                    r"\[PAGE\s+\d+\]\s*",
+                                    "",
+                                    str(chunk.get("text") or ""),
+                                    flags=re.IGNORECASE,
+                                )
+                            )
 
     # Streamlit keeps chat_input docked at the bottom of the page automatically.
     submitted_query = st.chat_input("Ask a legal question...")
@@ -893,7 +1033,9 @@ def chat_page() -> None:
                 query_result = query_legal_documents(
                     query=submitted_query,
                     document_filter=(
-                        last_upload["file_name"] if restrict_to_upload else None
+                        selected_filter
+                        if selected_filter != ALL_DOCUMENTS_LABEL
+                        else None
                     ),
                     top_n_final=5,
                     use_reranker=True,
@@ -941,6 +1083,7 @@ def chat_page() -> None:
                 answer,
                 hits,
                 citation_report=citation_report,
+                retrieval_rounds=query_result.get("retrieval_rounds", []),
             )
             explainability_unavailable = (
                 "Explainability checks could not be completed. "
@@ -958,6 +1101,7 @@ def chat_page() -> None:
                 "query": submitted_query,
                 "chunks": hits,
                 "citations": used_chunk_ids,
+                "retrieval_rounds": query_result.get("retrieval_rounds", []),
                 "explainability": explainability_data,
                 "explainability_unavailable": explainability_unavailable,
                 "retrieval_status": query_result.get("retrieval_status"),

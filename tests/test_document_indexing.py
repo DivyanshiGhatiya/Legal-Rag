@@ -5,6 +5,8 @@ import unittest
 from unittest.mock import patch
 
 import app
+from utils import embedding
+from utils.chunker import create_chunks_hierarchical
 from utils.embedding import document_already_embedded
 
 
@@ -103,6 +105,74 @@ class DocumentIndexingTests(unittest.TestCase):
         self.assertTrue(result["success"])
         self.assertEqual(result["embedded_count"], 1)
         remove_document.assert_called_once_with("contract.pdf")
+
+    def test_indexed_document_list_is_unique(self):
+        class CollectionStub:
+            def get(self, **_kwargs):
+                return {
+                    "metadatas": [
+                        {"source_name": "contract.pdf"},
+                        {"source_name": "contract.pdf"},
+                        {"source_name": "policy.pdf"},
+                    ]
+                }
+
+        with patch.object(app, "get_collection", return_value=CollectionStub()):
+            self.assertEqual(
+                app.list_indexed_documents(),
+                ["contract.pdf", "policy.pdf"],
+            )
+
+    def test_embedding_preserves_original_page_metadata(self):
+        class CollectionStub:
+            metadata = None
+
+            def add(self, **kwargs):
+                self.metadata = kwargs["metadatas"][0]
+
+        collection = CollectionStub()
+        chunk = {
+            "chunk_id": "contract_CHUNK_0001",
+            "text": "Source text",
+            "page": 4,
+            "page_numbers": "4,5",
+            "metadata": {
+                "page": 4,
+                "page_numbers": "4,5",
+            },
+        }
+        with (
+            tempfile.TemporaryDirectory() as persist_dir,
+            patch.object(embedding, "document_already_embedded", return_value=False),
+            patch.object(embedding, "embed_texts", return_value=[[0.1, 0.2]]),
+            patch.object(embedding, "get_collection", return_value=collection),
+        ):
+            embedding.embed_chunks(
+                [chunk],
+                document_name="contract.pdf",
+                document_hash="hash",
+                persist_dir=persist_dir,
+            )
+
+        self.assertEqual(collection.metadata["page"], 4)
+        self.assertEqual(collection.metadata["page_numbers"], "4,5")
+
+    def test_chunker_tracks_source_pdf_pages(self):
+        source_text = (
+            "[PAGE 1]\nFirst page source text. "
+            "[PAGE 2]\nSecond page source text."
+        )
+        with patch("utils.chunker._detect_headings_aggressive", return_value=[]):
+            chunks = create_chunks_hierarchical(
+                doc_meta={"file_name": "contract.pdf"},
+                cleaned_text=source_text,
+                semantic_chunking=False,
+            )
+
+        self.assertEqual(len(chunks), 1)
+        self.assertEqual(chunks[0]["page"], 1)
+        self.assertEqual(chunks[0]["page_numbers"], "1,2")
+        self.assertEqual(chunks[0]["metadata"]["page"], 1)
 
 
 if __name__ == "__main__":

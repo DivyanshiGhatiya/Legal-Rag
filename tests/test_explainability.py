@@ -1,7 +1,7 @@
 import unittest
 from contextlib import contextmanager
 
-from explainability import render_explainability_ui
+from explainability import extract_and_map_page_number, render_explainability_ui
 from utils.explainability_data import build_explainability_data
 from utils.generation import verify_citations
 
@@ -35,7 +35,9 @@ class _StreamlitStub:
         self.messages.append(str(value))
 
     @contextmanager
-    def expander(self, *_args, **_kwargs):
+    def expander(self, *args, **_kwargs):
+        if args:
+            self.messages.append(str(args[0]))
         yield
 
 
@@ -148,6 +150,77 @@ class ExplainabilityTests(unittest.TestCase):
         self.assertIsNone(result["evidence_report"]["citation_coverage"])
         self.assertFalse(
             result["evidence_report"]["citation_validation_available"]
+        )
+
+    def test_original_pdf_page_metadata_is_displayed_in_verification(self):
+        chunks = [
+            {
+                **_chunk(
+                    "contract_CHUNK_0001",
+                    "Written notice is required within thirty days.",
+                    dense_score=0.91,
+                ),
+                "metadata": {
+                    "source_name": "contract.pdf",
+                    "page": 6,
+                    "page_numbers": "6,7",
+                },
+            }
+        ]
+        self.assertEqual(
+            extract_and_map_page_number(chunks[0]),
+            (6, "Pages 6, 7"),
+        )
+        answer = "Written notice is required within thirty days [contract_CHUNK_0001]."
+        citation_report = verify_citations(answer, chunks)
+        explainability = build_explainability_data(
+            answer,
+            chunks,
+            citation_report=citation_report,
+            retrieval_rounds=[
+                {
+                    "round": 1,
+                    "query": "written notice",
+                    "hit_count": 1,
+                    "evidence_sufficient": True,
+                }
+            ],
+        )
+
+        streamlit = _StreamlitStub()
+        render_explainability_ui(
+            st_module=streamlit,
+            query="written notice",
+            retrieved_chunks=chunks,
+            answer_claims=explainability["claims"],
+            retrieval_metadata=chunks,
+            citation_report=citation_report,
+            claim_attributions=explainability["claim_attributions"],
+            evidence_report=explainability["evidence_report"],
+            retrieval_rounds=[
+                {
+                    "round": 1,
+                    "query": "written notice",
+                    "hit_count": 1,
+                    "evidence_sufficient": True,
+                }
+            ],
+            show_answer=False,
+        )
+
+        rendered = "\n".join(streamlit.messages)
+        self.assertIn("Pages 6, 7", rendered)
+        self.assertIn("Citation validation", rendered)
+        self.assertIn("Retrieval Verification Passes", rendered)
+        self.assertIn("Pass 1", rendered)
+        self.assertIn("Evidence sufficiency check passed", rendered)
+
+    def test_missing_source_page_is_not_estimated_from_document_prose(self):
+        self.assertEqual(
+            extract_and_map_page_number(
+                {"text": "The agreement refers to page 22 in another document."}
+            ),
+            (0, "Page N/A"),
         )
 
 

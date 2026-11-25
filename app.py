@@ -377,8 +377,9 @@ def list_indexed_documents() -> List[str]:
                 if item and item.get("source_name")
             }
         )
-    except Exception:
-        return []
+    except Exception as exc:
+        logger.exception("pipeline_stage=document_listing status=failed")
+        raise RuntimeError("Unable to load indexed documents.") from exc
 
 
 def remove_indexed_document(document_name: str) -> Dict[str, Any]:

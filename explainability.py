@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import html
 import re
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 
 _TOKEN_PATTERN = re.compile(r"\S+")
@@ -28,13 +28,6 @@ _UNCERTAINTY_TERMS = {
     "insufficient",
     "uncertain",
 }
-_PAGE_PATTERNS = (
-    re.compile(r"\bpage\s*[:#-]?\s*(\d+)\s*(?:of\s*\d+)?\b", re.IGNORECASE),
-    re.compile(r"\bp\.\s*(\d+)\b", re.IGNORECASE),
-    re.compile(r"[-–—]\s*(\d+)\s*[-–—]"),
-)
-
-
 def _normalize_token(token: str) -> str:
     """Return a lowercase alphanumeric representation of a token."""
     return re.sub(r"[^a-z0-9]", "", token.lower())
@@ -52,12 +45,33 @@ def _query_terms(query: str) -> set[str]:
 def extract_and_map_page_number(chunk: Dict[str, Any]) -> Tuple[int, str]:
     """Extract ``(page_number, formatted_label)`` from a chunk.
 
-    The resolver checks common parser metadata first, then structural markers
-    in the chunk text, and finally estimates the page from a character offset
-    using the document's total length or a 2,000-character average page size.
-    ``0`` is used when no reliable or estimable position exists.
+    The resolver checks page metadata and the extraction pipeline's explicit
+    ``[PAGE n]`` markers. It does not infer a page from chunk length or prose;
+    ``0`` is used when the source page is unavailable.
     """
     metadata = chunk.get("metadata") or {}
+    source_pages = chunk.get("page_numbers") or metadata.get("page_numbers")
+    if source_pages is not None:
+        page_values = (
+            source_pages
+            if isinstance(source_pages, (list, tuple, set))
+            else re.findall(r"\d+", str(source_pages))
+        )
+        page_numbers = sorted(
+            {
+                int(str(page).strip())
+                for page in page_values
+                if str(page).strip().isdigit() and int(str(page).strip()) > 0
+            }
+        )
+        if page_numbers:
+            page_label = (
+                f"Page {page_numbers[0]}"
+                if len(page_numbers) == 1
+                else f"Pages {', '.join(str(page) for page in page_numbers)}"
+            )
+            return page_numbers[0], page_label
+
     page_candidates = (
         chunk.get("page"),
         chunk.get("page_number"),
@@ -65,6 +79,7 @@ def extract_and_map_page_number(chunk: Dict[str, Any]) -> Tuple[int, str]:
         metadata.get("page"),
         metadata.get("page_number"),
         metadata.get("page_label"),
+        metadata.get("page_numbers"),
         metadata.get("page_num"),
         (chunk.get("fitz") or {}).get("page_number")
         if isinstance(chunk.get("fitz"), dict)
@@ -81,35 +96,21 @@ def extract_and_map_page_number(chunk: Dict[str, Any]) -> Tuple[int, str]:
             return page, f"Page {page}"
 
     text = str(chunk.get("text") or "")
-    for pattern in _PAGE_PATTERNS:
-        match = pattern.search(text)
-        if match:
-            page = int(match.group(1))
-            return page, f"Page {page}"
-
-    offset = (
-        chunk.get("char_offset")
-        or chunk.get("start_char")
-        or metadata.get("char_offset")
-        or metadata.get("start_char")
+    marker_pages = sorted(
+        {
+            int(page_number)
+            for page_number in re.findall(
+                r"\[PAGE\s+(\d+)\]", text, re.IGNORECASE
+            )
+        }
     )
-    total_length = (
-        chunk.get("document_char_length")
-        or chunk.get("total_characters")
-        or metadata.get("document_char_length")
-        or metadata.get("total_characters")
-    )
-    try:
-        if offset is not None and int(offset) >= 0:
-            offset_value = int(offset)
-            if total_length and int(total_length) > 0:
-                estimated_pages = max(1, (int(total_length) + 1999) // 2000)
-                page = min(estimated_pages, (offset_value // 2000) + 1)
-            else:
-                page = (offset_value // 2000) + 1
-            return page, f"Page {page}"
-    except (TypeError, ValueError):
-        pass
+    if marker_pages:
+        page_label = (
+            f"Page {marker_pages[0]}"
+            if len(marker_pages) == 1
+            else f"Pages {', '.join(str(page) for page in marker_pages)}"
+        )
+        return marker_pages[0], page_label
 
     return 0, "Page N/A"
 
@@ -413,17 +414,19 @@ def render_explainable_chunk_heatmap(
 
     for word, raw_score in word_scores:
         score = max(0.0, min(1.0, float(raw_score)))
-        alpha = 0.08 + (0.55 * score)
+        alpha = 0.08 + (0.32 * score)
         safe_word = html.escape(str(word))
         rendered_tokens.append(
             f'<span style="background-color:rgba(245,158,11,{alpha:.2f});'
             'border-radius:0.2rem;padding:0.05rem 0.12rem;'
-            f'color:#121110;">{safe_word}</span>'
+            f'color:var(--legal-text,#121110);">{safe_word}</span>'
         )
 
     return (
-        '<div style="background:#FFFFFF;color:#121110;border:1px solid '
-        'rgba(18,17,16,0.10);border-radius:0.75rem;padding:0.85rem 1rem;'
+        '<div style="background:var(--legal-surface,#FFFFFF);'
+        'color:var(--legal-text,#121110);border:1px solid '
+        'var(--legal-border,rgba(18,17,16,0.10));border-radius:0.75rem;'
+        'padding:0.85rem 1rem;'
         'line-height:1.75;font-size:0.95rem;">'
         + " ".join(rendered_tokens)
         + "</div>"
@@ -465,26 +468,30 @@ def render_uncertainty_highlighted_answer(
             )
         elif confidence >= 0.50:
             rendered_sentences.append(
-                f'<span{source_hint} style="background:rgba(254,240,138,0.6);'
+                f'<span{source_hint} style="background:rgba(254,240,138,0.2);'
                 'border-radius:0.25rem;padding:0.08rem 0.18rem;'
-                'color:#121110;">'
+                'color:var(--legal-text,#121110);">'
                 f"{safe_sentence} "
-                '<sup style="color:#854D0E;font-size:0.7em;font-weight:700;">'
+                '<sup style="color:var(--legal-text,#854D0E);'
+                'font-size:0.7em;font-weight:700;">'
                 '[Medium Confidence]</sup></span>'
             )
         else:
             rendered_sentences.append(
-                f'<span{source_hint} style="background:rgba(254,202,202,0.7);'
+                f'<span{source_hint} style="background:rgba(254,202,202,0.2);'
                 'border:1px dashed #B91C1C;border-radius:0.25rem;'
-                'padding:0.08rem 0.18rem;color:#121110;">'
+                'padding:0.08rem 0.18rem;color:var(--legal-text,#121110);">'
                 f"{safe_sentence} "
-                '<sup style="color:#991B1B;font-size:0.7em;font-weight:700;">'
+                '<sup style="color:var(--legal-text,#991B1B);'
+                'font-size:0.7em;font-weight:700;">'
                 '[Uncertain]</sup></span>'
             )
 
     return (
-        '<div style="background:#FFFFFF;color:#121110;border:1px solid '
-        'rgba(18,17,16,0.10);border-radius:0.75rem;padding:0.95rem 1rem;'
+        '<div style="background:var(--legal-surface,#FFFFFF);'
+        'color:var(--legal-text,#121110);border:1px solid '
+        'var(--legal-border,rgba(18,17,16,0.10));border-radius:0.75rem;'
+        'padding:0.95rem 1rem;'
         'line-height:1.65;">'
         + " ".join(rendered_sentences)
         + "</div>"
@@ -505,9 +512,9 @@ def render_generation_self_critique_card(critique_data: Dict[str, Any]) -> str:
 
     risk = str(critique_data.get("hallucination_risk", "MEDIUM")).upper()
     risk_colors = {
-        "LOW": ("#166534", "rgba(187,247,208,0.75)"),
-        "MEDIUM": ("#854D0E", "rgba(254,240,138,0.75)"),
-        "HIGH": ("#991B1B", "rgba(254,202,202,0.75)"),
+        "LOW": ("var(--legal-text,#166534)", "rgba(187,247,208,0.2)"),
+        "MEDIUM": ("var(--legal-text,#854D0E)", "rgba(254,240,138,0.2)"),
+        "HIGH": ("var(--legal-text,#991B1B)", "rgba(254,202,202,0.2)"),
     }
     risk_text, risk_background = risk_colors.get(risk, risk_colors["MEDIUM"])
     abstention = str(
@@ -515,15 +522,17 @@ def render_generation_self_critique_card(critique_data: Dict[str, Any]) -> str:
     ).upper()
     abstention_valid = abstention in {"PASSED", "REJECTED"}
     abstention = abstention if abstention_valid else "REJECTED"
-    abstention_color = "#166534" if abstention == "PASSED" else "#991B1B"
+    abstention_color = "var(--legal-text,#166534)"
     abstention_background = (
-        "rgba(187,247,208,0.75)" if abstention == "PASSED"
-        else "rgba(254,202,202,0.75)"
+        "rgba(187,247,208,0.2)" if abstention == "PASSED"
+        else "rgba(254,202,202,0.2)"
     )
     feedback = html.escape(str(critique_data.get("feedback", "No critique feedback provided.")))
 
     return f"""
-    <div style="background:#FFFFFF;color:#121110;border:1px solid rgba(18,17,16,0.10);
+    <div style="background:var(--legal-surface,#FFFFFF);
+                color:var(--legal-text,#121110);border:1px solid
+                var(--legal-border,rgba(18,17,16,0.10));
                 border-radius:0.75rem;padding:0.95rem 1rem;margin:0.75rem 0;
                 line-height:1.5;">
         <strong>Generation Self-Critique</strong>
@@ -538,7 +547,7 @@ def render_generation_self_critique_card(critique_data: Dict[str, Any]) -> str:
                 Abstention: {abstention}
             </span>
         </div>
-        <div style="margin-top:0.65rem;color:#5A5148;">{feedback}</div>
+        <div style="margin-top:0.65rem;color:var(--legal-text,#121110);">{feedback}</div>
     </div>
     """
 
@@ -571,6 +580,7 @@ def render_explainability_ui(
     claim_attributions: Optional[List[Dict[str, Any]]] = None,
     evidence_report: Optional[Dict[str, Any]] = None,
     show_answer: bool = True,
+    retrieval_rounds: Optional[List[Dict[str, Any]]] = None,
 ) -> None:
     """Render claim grounding, uncertainty answer, critique, and chunk heatmaps.
 
@@ -617,6 +627,23 @@ def render_explainability_ui(
             unsafe_allow_html=True,
         )
 
+    with st_module.expander("Citation validation", expanded=False):
+        if citation_report is None:
+            st_module.info("Citation validation was not returned for this answer.")
+        elif citation_report.get("is_valid"):
+            st_module.success("Citation validation passed.")
+        else:
+            st_module.warning("Citation validation found issues.")
+        if citation_report:
+            citations = citation_report.get("citations", [])
+            if citations:
+                st_module.caption(
+                    "Validated citation IDs: "
+                    + ", ".join(f"`{chunk_id}`" for chunk_id in citations)
+                )
+            for problem in citation_report.get("problems", []):
+                st_module.warning(str(problem))
+
     if evidence_report is not None:
         st_module.markdown("### Evidence Verification")
         claim_count = evidence_report.get("claim_count", 0)
@@ -661,10 +688,21 @@ def render_explainability_ui(
 
         for claim in evidence_report.get("claims", []):
             cited_ids = claim.get("validated_citation_ids", [])
-            reference_label = (
-                ", ".join(f"`{chunk_id}`" for chunk_id in cited_ids)
-                if cited_ids
-                else "Citation validation unavailable"
+            chunks_by_id = {
+                str(chunk.get("chunk_id")): chunk for chunk in retrieved_chunks
+            }
+            reference_details = []
+            for chunk_id in cited_ids:
+                cited_chunk = chunks_by_id.get(str(chunk_id))
+                if cited_chunk:
+                    _, page_label = extract_and_map_page_number(cited_chunk)
+                    reference_details.append(
+                        f"`{chunk_id}` — {_chunk_source(cited_chunk)}, {page_label}"
+                    )
+                else:
+                    reference_details.append(f"`{chunk_id}`")
+            reference_label = ", ".join(reference_details) or (
+                "Citation validation unavailable"
                 if not evidence_report.get("citation_validation_available")
                 else "No validated retrieved citation"
             )
@@ -698,9 +736,30 @@ def render_explainability_ui(
                 + str(contradiction.get("reason", "no analysis result is available"))
             )
 
-        if citation_report and citation_report.get("problems"):
-            for problem in citation_report["problems"]:
-                st_module.warning(str(problem))
+
+    if retrieval_rounds:
+        st_module.markdown("### Retrieval Verification Passes")
+        for round_data in retrieval_rounds:
+            round_number = round_data.get("round", "?")
+            hit_count = round_data.get("hit_count", 0)
+            sufficiency = round_data.get("evidence_sufficient")
+            query_label = round_data.get("query") or "search"
+            with st_module.expander(
+                f"Pass {round_number} · {hit_count} chunks · {query_label}",
+                expanded=False,
+            ):
+                if sufficiency is True:
+                    st_module.success("Evidence sufficiency check passed.")
+                elif sufficiency is False:
+                    st_module.warning("Evidence sufficiency check requested another pass.")
+                else:
+                    st_module.info("No evidence sufficiency result was recorded for this pass.")
+                if round_data.get("query"):
+                    st_module.caption(f"Search query: {round_data['query']}")
+                if round_data.get("evidence_check_error"):
+                    st_module.warning(
+                        f"Evidence check error: {round_data['evidence_check_error']}"
+                    )
 
     if not retrieved_chunks:
         return
@@ -713,19 +772,22 @@ def render_explainability_ui(
         ("Cross-Encoder", "rerank_score"),
     )
     trace_chunks = retrieval_metadata or retrieved_chunks
-    for rank, chunk in enumerate(trace_chunks, start=1):
-        scores = []
-        for label, key in score_names:
-            value = chunk.get(key)
-            try:
-                formatted_value = f"{float(value):.3f}" if value is not None else "n/a"
-            except (TypeError, ValueError):
-                formatted_value = "n/a"
-            scores.append(f"{label}: {formatted_value}")
-        st_module.caption(
-            f"#{rank} `{chunk.get('chunk_id', 'unknown')}` — "
-            + " | ".join(scores)
-        )
+    with st_module.expander("Retrieval scores and source pages", expanded=False):
+        for rank, chunk in enumerate(trace_chunks, start=1):
+            scores = []
+            for label, key in score_names:
+                value = chunk.get(key)
+                try:
+                    formatted_value = f"{float(value):.3f}" if value is not None else "n/a"
+                except (TypeError, ValueError):
+                    formatted_value = "n/a"
+                scores.append(f"{label}: {formatted_value}")
+            _, page_label = extract_and_map_page_number(chunk)
+            st_module.caption(
+                f"#{rank} `{chunk.get('chunk_id', 'unknown')}` — "
+                f"{_chunk_source(chunk)}, {page_label} — "
+                + " | ".join(scores)
+            )
 
     page_stats = get_document_page_stats(retrieved_chunks)
     summary_parts = []
@@ -735,8 +797,10 @@ def render_explainability_ui(
         summary_parts.append(f"📄 {safe_source} (Pages {html.escape(page_label)})")
     if summary_parts:
         st_module.markdown(
-            '<div style="background:#FFFFFF;color:#121110;border:1px solid '
-            'rgba(18,17,16,0.10);border-radius:0.75rem;padding:0.75rem 1rem;'
+            '<div style="background:var(--legal-surface,#FFFFFF);'
+            'color:var(--legal-text,#121110);border:1px solid '
+            'var(--legal-border,rgba(18,17,16,0.10));'
+            'border-radius:0.75rem;padding:0.75rem 1rem;'
             'margin:0.75rem 0;">'
             + " | ".join(summary_parts)
             + "</div>",
@@ -753,9 +817,11 @@ def render_explainability_ui(
 
         with st_module.expander(title, expanded=False):
             st_module.markdown(
-                f"<div style=\"background:#F4F1ED;border:1px solid rgba(18,17,16,0.10);"
-                f"border-radius:999px;padding:0.35rem 0.65rem;display:inline-block;"
-                f"color:#121110;\"><strong>{source}</strong> • {page}</div>",
+                f"<div style=\"background:var(--legal-surface,#F4F1ED);"
+                f"border:1px solid var(--legal-border,rgba(18,17,16,0.10));"
+                f"border-radius:999px;"
+                f"padding:0.35rem 0.65rem;display:inline-block;"
+                f"color:var(--legal-text,#121110);\"><strong>{source}</strong> • {page}</div>",
                 unsafe_allow_html=True,
             )
             st_module.markdown(

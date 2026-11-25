@@ -82,12 +82,20 @@ def embed_chunks(chunks, collection_name=DEFAULT_COLLECTION_NAME, persist_dir=DE
             chunk_meta = chunk.get("metadata", {}) or {}
             section = chunk.get("section", "")
             subsection = chunk.get("subsection", "")
+            page = chunk.get("page") or chunk_meta.get("page")
+            page_numbers = (
+                chunk.get("page_numbers")
+                or chunk_meta.get("page_numbers")
+                or ""
+            )
         else:
             text = str(chunk)
             cid = "chunk_{:03d}".format(i)
             chunk_meta = {}
             section = ""
             subsection = ""
+            page = None
+            page_numbers = ""
         if text:
             normalized.append({
                 "chunk_id": cid,
@@ -97,6 +105,8 @@ def embed_chunks(chunks, collection_name=DEFAULT_COLLECTION_NAME, persist_dir=DE
                 "hierarchy": chunk_meta.get("hierarchy", []),
                 "hierarchy_depth": chunk_meta.get("hierarchy_depth", 0),
                 "section_number": chunk_meta.get("section_number") or "",
+                "page": page,
+                "page_numbers": page_numbers,
             })
 
     if not normalized:
@@ -121,6 +131,10 @@ def embed_chunks(chunks, collection_name=DEFAULT_COLLECTION_NAME, persist_dir=DE
             "section_number": n["section_number"],
             "chunk_length": len(n["text"]),
         }
+        if n["page"] is not None:
+            meta["page"] = int(n["page"])
+        if n["page_numbers"]:
+            meta["page_numbers"] = str(n["page_numbers"])
         collection.add(documents=[n["text"]], embeddings=[emb], ids=[n["chunk_id"]], metadatas=[meta])
 
     os.makedirs(persist_dir, exist_ok=True)
