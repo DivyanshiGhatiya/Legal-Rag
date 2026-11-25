@@ -119,6 +119,77 @@ class ExplainabilityTests(unittest.TestCase):
         self.assertEqual(result["evidence_report"]["citation_coverage"], 0.0)
         self.assertEqual(result["evidence_report"]["unverified_claims"], [answer])
 
+    def test_citation_on_later_sentence_does_not_cover_prior_claim(self):
+        chunks = [_chunk("contract_CHUNK_1", "Payment is due within thirty days.")]
+        answer = (
+            "The agreement term is one year. "
+            "Payment is due within thirty days [contract_CHUNK_1]."
+        )
+
+        citation_report = verify_citations(answer, chunks)
+
+        self.assertFalse(citation_report["is_valid"])
+        self.assertEqual(
+            citation_report["uncited_lines"],
+            ["The agreement term is one year."],
+        )
+
+    def test_bracketed_legal_reference_is_not_a_chunk_citation(self):
+        chunks = [_chunk("contract_CHUNK_1", "Payment is due within thirty days.")]
+        answer = (
+            "The agreement refers to [Section 4]. "
+            "Payment is due within thirty days [contract_CHUNK_1]."
+        )
+
+        citation_report = verify_citations(answer, chunks)
+
+        self.assertFalse(citation_report["is_valid"])
+        self.assertEqual(citation_report["unknown_citations"], [])
+        self.assertEqual(
+            citation_report["uncited_lines"],
+            ["The agreement refers to [Section 4]."],
+        )
+
+    def test_claim_ending_in_colon_is_not_skipped(self):
+        chunks = [_chunk("contract_CHUNK_1", "Payment is due within thirty days.")]
+
+        citation_report = verify_citations(
+            "The agreement requires payment within thirty days:", chunks
+        )
+
+        self.assertFalse(citation_report["is_valid"])
+        self.assertEqual(
+            citation_report["uncited_lines"],
+            ["The agreement requires payment within thirty days:"],
+        )
+
+    def test_document_absence_claim_requires_full_document_review(self):
+        chunks = [
+            _chunk(
+                "contract_CHUNK_1",
+                "Payment is due within thirty days of receiving the invoice.",
+            )
+        ]
+        answer = (
+            "The agreement does not specify a late-payment penalty "
+            "[contract_CHUNK_1]."
+        )
+
+        citation_report = verify_citations(answer, chunks)
+        result = build_explainability_data(
+            answer,
+            chunks,
+            citation_report=citation_report,
+        )
+
+        self.assertFalse(citation_report["is_valid"])
+        self.assertEqual(len(citation_report["full_document_review_claims"]), 1)
+        self.assertEqual(
+            result["claim_attributions"][0]["verification_status"],
+            "full_document_review_required",
+        )
+        self.assertEqual(result["evidence_report"]["citation_coverage"], 0.0)
+
     def test_partial_multi_citation_does_not_count_as_verified_coverage(self):
         chunks = [_chunk("contract_CHUNK_1", "A notice must be in writing.")]
         answer = (

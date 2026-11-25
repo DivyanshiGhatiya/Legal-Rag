@@ -14,6 +14,23 @@ def compute_file_hash(file_bytes):
     return hashlib.sha256(file_bytes).hexdigest()
 
 
+def _validate_embeddings(embeddings, expected_count):
+    if len(embeddings) != expected_count:
+        raise RuntimeError(
+            "Embedding service returned "
+            f"{len(embeddings)} vectors for {expected_count} inputs."
+        )
+
+    dimensions = {len(embedding) for embedding in embeddings}
+    if not dimensions or 0 in dimensions:
+        raise RuntimeError("Embedding service returned an empty embedding vector.")
+    if len(dimensions) != 1:
+        raise RuntimeError(
+            "Embedding service returned vectors with inconsistent dimensions: "
+            f"{sorted(dimensions)}."
+        )
+
+
 def embed_texts(texts, prefix="search_document: "):
     if not texts:
         return []
@@ -33,7 +50,9 @@ def embed_texts(texts, prefix="search_document: "):
             f"Ollama returned no embeddings for model '{EMBED_MODEL}'. "
             "Run 'ollama pull nomic-embed-text' and try again."
         )
-    return [list(map(float, e)) for e in embeddings]
+    normalized_embeddings = [list(map(float, embedding)) for embedding in embeddings]
+    _validate_embeddings(normalized_embeddings, len(texts))
+    return normalized_embeddings
 
 
 def embed_query(query):

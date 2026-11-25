@@ -1,0 +1,5 @@
+chunk_size,average_response_time_ms,chunk_count
+500,701.93,253
+1000,913.77,141
+1500,714.2,93
+2000,435.57,66

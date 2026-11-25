@@ -1,0 +1,501 @@
+chunk_size,question,rank,chunk_id,rrf_score,relevant
+500,What is the minimum and maximum number of Directors?,1,aoa_CHUNK_0172,0.032266458495966696,False
+500,What is the minimum and maximum number of Directors?,2,aoa_CHUNK_0150,0.031544957774465976,True
+500,What is the minimum and maximum number of Directors?,3,aoa_CHUNK_0157,0.0315136476426799,False
+500,What is the minimum and maximum number of Directors?,4,aoa_CHUNK_0192,0.031009615384615385,False
+500,What is the minimum and maximum number of Directors?,5,aoa_CHUNK_0151,0.0304147465437788,False
+500,How many Board Meetings must be held in a calendar year?,1,aoa_CHUNK_0183,0.03278688524590164,True
+500,How many Board Meetings must be held in a calendar year?,2,aoa_CHUNK_0206,0.029877369007803793,False
+500,How many Board Meetings must be held in a calendar year?,3,aoa_CHUNK_0113,0.029116045245077504,False
+500,How many Board Meetings must be held in a calendar year?,4,aoa_CHUNK_0184,0.026356857985087564,False
+500,How many Board Meetings must be held in a calendar year?,5,aoa_CHUNK_0190,0.016129032258064516,False
+500,How much notice is required for a Board Meeting?,1,aoa_CHUNK_0120,0.032018442622950824,False
+500,How much notice is required for a Board Meeting?,2,aoa_CHUNK_0117,0.03200204813108039,False
+500,How much notice is required for a Board Meeting?,3,aoa_CHUNK_0118,0.028404512489927477,False
+500,How much notice is required for a Board Meeting?,4,aoa_CHUNK_0232,0.028404512489927477,False
+500,How much notice is required for a Board Meeting?,5,aoa_CHUNK_0188,0.028373015873015873,False
+500,Who appoints the Chairperson of the Board?,1,aoa_CHUNK_0152,0.03278688524590164,True
+500,Who appoints the Chairperson of the Board?,2,aoa_CHUNK_0153,0.03200204813108039,False
+500,Who appoints the Chairperson of the Board?,3,aoa_CHUNK_0129,0.030536130536130537,False
+500,Who appoints the Chairperson of the Board?,4,aoa_CHUNK_0138,0.030309988518943745,False
+500,Who appoints the Chairperson of the Board?,5,aoa_CHUNK_0136,0.02919863597612958,False
+500,What is the quorum for a Board Meeting?,1,aoa_CHUNK_0191,0.03278688524590164,True
+500,What is the quorum for a Board Meeting?,2,aoa_CHUNK_0190,0.0315136476426799,False
+500,What is the quorum for a Board Meeting?,3,aoa_CHUNK_0192,0.03149801587301587,False
+500,What is the quorum for a Board Meeting?,4,aoa_CHUNK_0128,0.03149801587301587,False
+500,What is the quorum for a Board Meeting?,5,aoa_CHUNK_0126,0.030309988518943745,False
+500,Can the Managing Director also be the Chairperson?,1,aoa_CHUNK_0154,0.03278688524590164,True
+500,Can the Managing Director also be the Chairperson?,2,aoa_CHUNK_0153,0.03200204813108039,True
+500,Can the Managing Director also be the Chairperson?,3,aoa_CHUNK_0180,0.03125,False
+500,Can the Managing Director also be the Chairperson?,4,aoa_CHUNK_0179,0.03076923076923077,False
+500,Can the Managing Director also be the Chairperson?,5,aoa_CHUNK_0152,0.0304147465437788,False
+500,Does the Chairperson have a casting vote if there is a tie?,1,aoa_CHUNK_0153,0.03278688524590164,True
+500,Does the Chairperson have a casting vote if there is a tie?,2,aoa_CHUNK_0193,0.03200204813108039,False
+500,Does the Chairperson have a casting vote if there is a tie?,3,aoa_CHUNK_0152,0.031054405392392875,True
+500,Does the Chairperson have a casting vote if there is a tie?,4,aoa_CHUNK_0138,0.031024531024531024,False
+500,Does the Chairperson have a casting vote if there is a tie?,5,aoa_CHUNK_0133,0.031009615384615385,False
+500,When can an alternate director be nominated for an absent director?,1,aoa_CHUNK_0155,0.03252247488101534,False
+500,When can an alternate director be nominated for an absent director?,2,aoa_CHUNK_0154,0.03252247488101534,True
+500,When can an alternate director be nominated for an absent director?,3,aoa_CHUNK_0156,0.031746031746031744,False
+500,When can an alternate director be nominated for an absent director?,4,aoa_CHUNK_0189,0.031009615384615385,False
+500,When can an alternate director be nominated for an absent director?,5,aoa_CHUNK_0178,0.02862400327131466,False
+500,How many woman directors must the Board have?,1,aoa_CHUNK_0151,0.03278688524590164,True
+500,How many woman directors must the Board have?,2,aoa_CHUNK_0162,0.030536130536130537,False
+500,How many woman directors must the Board have?,3,aoa_CHUNK_0157,0.030309988518943745,False
+500,How many woman directors must the Board have?,4,aoa_CHUNK_0152,0.029418126757516764,False
+500,How many woman directors must the Board have?,5,aoa_CHUNK_0211,0.027479766610201392,False
+500,Can the Company appoint more than 15 directors?,1,aoa_CHUNK_0150,0.03278688524590164,True
+500,Can the Company appoint more than 15 directors?,2,aoa_CHUNK_0154,0.031746031746031744,False
+500,Can the Company appoint more than 15 directors?,3,aoa_CHUNK_0165,0.03007688828584351,False
+500,Can the Company appoint more than 15 directors?,4,aoa_CHUNK_0157,0.028629032258064516,False
+500,Can the Company appoint more than 15 directors?,5,aoa_CHUNK_0153,0.028612012987012988,False
+500,Do directors have to hold qualification shares?,1,aoa_CHUNK_0167,0.03278688524590164,True
+500,Do directors have to hold qualification shares?,2,aoa_CHUNK_0161,0.03225806451612903,False
+500,Do directors have to hold qualification shares?,3,aoa_CHUNK_0165,0.03057889822595705,False
+500,Do directors have to hold qualification shares?,4,aoa_CHUNK_0164,0.029273504273504274,False
+500,Do directors have to hold qualification shares?,5,aoa_CHUNK_0066,0.02651914295749912,False
+500,What fraction of directors retire by rotation at each AGM?,1,aoa_CHUNK_0176,0.03252247488101534,True
+500,What fraction of directors retire by rotation at each AGM?,2,aoa_CHUNK_0177,0.032266458495966696,False
+500,What fraction of directors retire by rotation at each AGM?,3,aoa_CHUNK_0175,0.0315136476426799,False
+500,What fraction of directors retire by rotation at each AGM?,4,aoa_CHUNK_0178,0.03125,False
+500,What fraction of directors retire by rotation at each AGM?,5,aoa_CHUNK_0161,0.03007688828584351,False
+500,How many votes does each director have at a Board Meeting?,1,aoa_CHUNK_0190,0.03278688524590164,True
+500,How many votes does each director have at a Board Meeting?,2,aoa_CHUNK_0189,0.0315136476426799,True
+500,How many votes does each director have at a Board Meeting?,3,aoa_CHUNK_0193,0.02946236559139785,False
+500,How many votes does each director have at a Board Meeting?,4,aoa_CHUNK_0152,0.02919863597612958,False
+500,How many votes does each director have at a Board Meeting?,5,aoa_CHUNK_0191,0.029030910609857977,False
+500,What vote is needed to adopt a Board resolution?,1,aoa_CHUNK_0190,0.032018442622950824,True
+500,What vote is needed to adopt a Board resolution?,2,aoa_CHUNK_0133,0.031754032258064516,False
+500,What vote is needed to adopt a Board resolution?,3,aoa_CHUNK_0132,0.031746031746031744,False
+500,What vote is needed to adopt a Board resolution?,4,aoa_CHUNK_0205,0.0315136476426799,False
+500,What vote is needed to adopt a Board resolution?,5,aoa_CHUNK_0206,0.02946912242686891,False
+500,What happens if a Board meeting lacks a quorum?,1,aoa_CHUNK_0191,0.032018442622950824,False
+500,What happens if a Board meeting lacks a quorum?,2,aoa_CHUNK_0128,0.031754032258064516,False
+500,What happens if a Board meeting lacks a quorum?,3,aoa_CHUNK_0190,0.031746031746031744,False
+500,What happens if a Board meeting lacks a quorum?,4,aoa_CHUNK_0192,0.0315136476426799,True
+500,What happens if a Board meeting lacks a quorum?,5,aoa_CHUNK_0126,0.030090497737556562,False
+500,Who can remove a Debenture Director?,1,aoa_CHUNK_0160,0.03278688524590164,True
+500,Who can remove a Debenture Director?,2,aoa_CHUNK_0161,0.031754032258064516,False
+500,Who can remove a Debenture Director?,3,aoa_CHUNK_0159,0.031746031746031744,False
+500,Who can remove a Debenture Director?,4,aoa_CHUNK_0163,0.030117753623188408,False
+500,Who can remove a Debenture Director?,5,aoa_CHUNK_0154,0.028629032258064516,False
+500,When does a director's resignation take effect?,1,aoa_CHUNK_0174,0.03278688524590164,True
+500,When does a director's resignation take effect?,2,aoa_CHUNK_0155,0.03200204813108039,False
+500,When does a director's resignation take effect?,3,aoa_CHUNK_0160,0.03007688828584351,False
+500,When does a director's resignation take effect?,4,aoa_CHUNK_0154,0.029437229437229435,False
+500,When does a director's resignation take effect?,5,aoa_CHUNK_0186,0.027884615384615386,False
+500,Can a Board meeting be called on shorter notice?,1,aoa_CHUNK_0188,0.03278688524590164,True
+500,Can a Board meeting be called on shorter notice?,2,aoa_CHUNK_0117,0.031754032258064516,False
+500,Can a Board meeting be called on shorter notice?,3,aoa_CHUNK_0124,0.03036576949620428,False
+500,Can a Board meeting be called on shorter notice?,4,aoa_CHUNK_0189,0.030330882352941176,False
+500,Can a Board meeting be called on shorter notice?,5,aoa_CHUNK_0125,0.029957522915269395,False
+500,What is the quorum when interested directors are two-thirds or more?,1,aoa_CHUNK_0192,0.03278688524590164,True
+500,What is the quorum when interested directors are two-thirds or more?,2,aoa_CHUNK_0191,0.03225806451612903,False
+500,What is the quorum when interested directors are two-thirds or more?,3,aoa_CHUNK_0076,0.030330882352941176,False
+500,What is the quorum when interested directors are two-thirds or more?,4,aoa_CHUNK_0150,0.028790389395194696,False
+500,What is the quorum when interested directors are two-thirds or more?,5,aoa_CHUNK_0128,0.028205128205128206,False
+500,When must an alternate director vacate office?,1,aoa_CHUNK_0155,0.03278688524590164,True
+500,When must an alternate director vacate office?,2,aoa_CHUNK_0154,0.03200204813108039,False
+500,When must an alternate director vacate office?,3,aoa_CHUNK_0156,0.03149801587301587,False
+500,When must an alternate director vacate office?,4,aoa_CHUNK_0161,0.0304147465437788,False
+500,When must an alternate director vacate office?,5,aoa_CHUNK_0173,0.029083245521601686,False
+500,Which powers need a special resolution in general meeting before the Board can use them?,1,aoa_CHUNK_0196,0.03252247488101534,True
+500,Which powers need a special resolution in general meeting before the Board can use them?,2,aoa_CHUNK_0132,0.030776515151515152,False
+500,Which powers need a special resolution in general meeting before the Board can use them?,3,aoa_CHUNK_0250,0.030090497737556562,False
+500,Which powers need a special resolution in general meeting before the Board can use them?,4,aoa_CHUNK_0182,0.029051670471052088,False
+500,Which powers need a special resolution in general meeting before the Board can use them?,5,aoa_CHUNK_0071,0.028949545078577336,False
+500,Can continuing directors act despite a vacancy?,1,aoa_CHUNK_0172,0.03278688524590164,True
+500,Can continuing directors act despite a vacancy?,2,aoa_CHUNK_0157,0.03225806451612903,False
+500,Can continuing directors act despite a vacancy?,3,aoa_CHUNK_0154,0.030776515151515152,False
+500,Can continuing directors act despite a vacancy?,4,aoa_CHUNK_0166,0.03057889822595705,False
+500,Can continuing directors act despite a vacancy?,5,aoa_CHUNK_0174,0.027242401779095628,False
+500,Under which sections is director remuneration paid?,1,aoa_CHUNK_0168,0.032266458495966696,True
+500,Under which sections is director remuneration paid?,2,aoa_CHUNK_0169,0.032266458495966696,False
+500,Under which sections is director remuneration paid?,3,aoa_CHUNK_0179,0.03125,False
+500,Under which sections is director remuneration paid?,4,aoa_CHUNK_0167,0.03076923076923077,False
+500,Under which sections is director remuneration paid?,5,aoa_CHUNK_0171,0.029827662395050816,False
+500,Can directors be reimbursed travelling and hotel expenses?,1,aoa_CHUNK_0171,0.03278688524590164,True
+500,Can directors be reimbursed travelling and hotel expenses?,2,aoa_CHUNK_0167,0.03225806451612903,False
+500,Can directors be reimbursed travelling and hotel expenses?,3,aoa_CHUNK_0154,0.031024531024531024,False
+500,Can directors be reimbursed travelling and hotel expenses?,4,aoa_CHUNK_0244,0.028577260665441927,False
+500,Can directors be reimbursed travelling and hotel expenses?,5,aoa_CHUNK_0150,0.02668564312399929,False
+500,Can a director be paid special remuneration for extra services?,1,aoa_CHUNK_0169,0.03278688524590164,True
+500,Can a director be paid special remuneration for extra services?,2,aoa_CHUNK_0168,0.031024531024531024,False
+500,Can a director be paid special remuneration for extra services?,3,aoa_CHUNK_0154,0.030834914611005692,False
+500,Can a director be paid special remuneration for extra services?,4,aoa_CHUNK_0167,0.030776515151515152,False
+500,Can a director be paid special remuneration for extra services?,5,aoa_CHUNK_0171,0.03021353930031804,False
+1000,What is the minimum and maximum number of Directors?,1,aoa_CHUNK_0086,0.03131881575727918,True
+1000,What is the minimum and maximum number of Directors?,2,aoa_CHUNK_0107,0.030776515151515152,False
+1000,What is the minimum and maximum number of Directors?,3,aoa_CHUNK_0097,0.030679156908665108,False
+1000,What is the minimum and maximum number of Directors?,4,aoa_CHUNK_0087,0.030621785881252923,False
+1000,What is the minimum and maximum number of Directors?,5,aoa_CHUNK_0100,0.03057889822595705,False
+1000,How many Board Meetings must be held in a calendar year?,1,aoa_CHUNK_0104,0.03278688524590164,True
+1000,How many Board Meetings must be held in a calendar year?,2,aoa_CHUNK_0067,0.031754032258064516,False
+1000,How many Board Meetings must be held in a calendar year?,3,aoa_CHUNK_0115,0.030536130536130537,False
+1000,How many Board Meetings must be held in a calendar year?,4,aoa_CHUNK_0105,0.029957522915269395,False
+1000,How many Board Meetings must be held in a calendar year?,5,aoa_CHUNK_0071,0.029910714285714284,False
+1000,How much notice is required for a Board Meeting?,1,aoa_CHUNK_0106,0.032266458495966696,True
+1000,How much notice is required for a Board Meeting?,2,aoa_CHUNK_0069,0.03128054740957967,False
+1000,How much notice is required for a Board Meeting?,3,aoa_CHUNK_0068,0.031054405392392875,False
+1000,How much notice is required for a Board Meeting?,4,aoa_CHUNK_0070,0.031024531024531024,False
+1000,How much notice is required for a Board Meeting?,5,aoa_CHUNK_0029,0.03076923076923077,False
+1000,Who appoints the Chairperson of the Board?,1,aoa_CHUNK_0088,0.03252247488101534,False
+1000,Who appoints the Chairperson of the Board?,2,aoa_CHUNK_0087,0.031754032258064516,True
+1000,Who appoints the Chairperson of the Board?,3,aoa_CHUNK_0075,0.031746031746031744,False
+1000,Who appoints the Chairperson of the Board?,4,aoa_CHUNK_0108,0.02946912242686891,False
+1000,Who appoints the Chairperson of the Board?,5,aoa_CHUNK_0080,0.027984344422700584,False
+1000,What is the quorum for a Board Meeting?,1,aoa_CHUNK_0107,0.03278688524590164,True
+1000,What is the quorum for a Board Meeting?,2,aoa_CHUNK_0074,0.03200204813108039,False
+1000,What is the quorum for a Board Meeting?,3,aoa_CHUNK_0108,0.031754032258064516,False
+1000,What is the quorum for a Board Meeting?,4,aoa_CHUNK_0073,0.03076923076923077,False
+1000,What is the quorum for a Board Meeting?,5,aoa_CHUNK_0076,0.030303030303030304,False
+1000,Can the Managing Director also be the Chairperson?,1,aoa_CHUNK_0088,0.03252247488101534,True
+1000,Can the Managing Director also be the Chairperson?,2,aoa_CHUNK_0102,0.031746031746031744,False
+1000,Can the Managing Director also be the Chairperson?,3,aoa_CHUNK_0075,0.030886196246139225,False
+1000,Can the Managing Director also be the Chairperson?,4,aoa_CHUNK_0101,0.030776515151515152,False
+1000,Can the Managing Director also be the Chairperson?,5,aoa_CHUNK_0103,0.030621785881252923,False
+1000,Does the Chairperson have a casting vote if there is a tie?,1,aoa_CHUNK_0108,0.03252247488101534,False
+1000,Does the Chairperson have a casting vote if there is a tie?,2,aoa_CHUNK_0088,0.03252247488101534,True
+1000,Does the Chairperson have a casting vote if there is a tie?,3,aoa_CHUNK_0077,0.03149801587301587,False
+1000,Does the Chairperson have a casting vote if there is a tie?,4,aoa_CHUNK_0080,0.031009615384615385,False
+1000,Does the Chairperson have a casting vote if there is a tie?,5,aoa_CHUNK_0087,0.03036576949620428,True
+1000,When can an alternate director be nominated for an absent director?,1,aoa_CHUNK_0088,0.03278688524590164,True
+1000,When can an alternate director be nominated for an absent director?,2,aoa_CHUNK_0089,0.03225806451612903,False
+1000,When can an alternate director be nominated for an absent director?,3,aoa_CHUNK_0095,0.031009615384615385,False
+1000,When can an alternate director be nominated for an absent director?,4,aoa_CHUNK_0100,0.030303030303030304,False
+1000,When can an alternate director be nominated for an absent director?,5,aoa_CHUNK_0091,0.029418126757516764,False
+1000,How many woman directors must the Board have?,1,aoa_CHUNK_0087,0.03278688524590164,True
+1000,How many woman directors must the Board have?,2,aoa_CHUNK_0107,0.031024531024531024,False
+1000,How many woman directors must the Board have?,3,aoa_CHUNK_0104,0.030330882352941176,False
+1000,How many woman directors must the Board have?,4,aoa_CHUNK_0088,0.02967032967032967,False
+1000,How many woman directors must the Board have?,5,aoa_CHUNK_0115,0.029116045245077504,False
+1000,Can the Company appoint more than 15 directors?,1,aoa_CHUNK_0086,0.03252247488101534,True
+1000,Can the Company appoint more than 15 directors?,2,aoa_CHUNK_0088,0.03128054740957967,False
+1000,Can the Company appoint more than 15 directors?,3,aoa_CHUNK_0094,0.03125763125763126,False
+1000,Can the Company appoint more than 15 directors?,4,aoa_CHUNK_0087,0.03028233151183971,False
+1000,Can the Company appoint more than 15 directors?,5,aoa_CHUNK_0101,0.02964426877470356,False
+1000,Do directors have to hold qualification shares?,1,aoa_CHUNK_0095,0.03278688524590164,True
+1000,Do directors have to hold qualification shares?,2,aoa_CHUNK_0094,0.03128054740957967,False
+1000,Do directors have to hold qualification shares?,3,aoa_CHUNK_0093,0.030117753623188408,False
+1000,Do directors have to hold qualification shares?,4,aoa_CHUNK_0091,0.029386529386529386,False
+1000,Do directors have to hold qualification shares?,5,aoa_CHUNK_0090,0.02817460317460317,False
+1000,What fraction of directors retire by rotation at each AGM?,1,aoa_CHUNK_0099,0.03278688524590164,True
+1000,What fraction of directors retire by rotation at each AGM?,2,aoa_CHUNK_0100,0.03225806451612903,False
+1000,What fraction of directors retire by rotation at each AGM?,3,aoa_CHUNK_0102,0.031024531024531024,False
+1000,What fraction of directors retire by rotation at each AGM?,4,aoa_CHUNK_0107,0.03007688828584351,False
+1000,What fraction of directors retire by rotation at each AGM?,5,aoa_CHUNK_0086,0.029910714285714284,False
+1000,How many votes does each director have at a Board Meeting?,1,aoa_CHUNK_0107,0.03252247488101534,True
+1000,How many votes does each director have at a Board Meeting?,2,aoa_CHUNK_0106,0.03200204813108039,True
+1000,How many votes does each director have at a Board Meeting?,3,aoa_CHUNK_0108,0.03131881575727918,False
+1000,How many votes does each director have at a Board Meeting?,4,aoa_CHUNK_0087,0.030117753623188408,False
+1000,How many votes does each director have at a Board Meeting?,5,aoa_CHUNK_0115,0.030090497737556562,False
+1000,What vote is needed to adopt a Board resolution?,1,aoa_CHUNK_0107,0.032266458495966696,True
+1000,What vote is needed to adopt a Board resolution?,2,aoa_CHUNK_0077,0.03225806451612903,False
+1000,What vote is needed to adopt a Board resolution?,3,aoa_CHUNK_0114,0.03149801587301587,False
+1000,What vote is needed to adopt a Board resolution?,4,aoa_CHUNK_0108,0.030776515151515152,False
+1000,What vote is needed to adopt a Board resolution?,5,aoa_CHUNK_0080,0.02919863597612958,False
+1000,What happens if a Board meeting lacks a quorum?,1,aoa_CHUNK_0107,0.03252247488101534,False
+1000,What happens if a Board meeting lacks a quorum?,2,aoa_CHUNK_0108,0.031754032258064516,True
+1000,What happens if a Board meeting lacks a quorum?,3,aoa_CHUNK_0074,0.031746031746031744,False
+1000,What happens if a Board meeting lacks a quorum?,4,aoa_CHUNK_0076,0.030536130536130537,False
+1000,What happens if a Board meeting lacks a quorum?,5,aoa_CHUNK_0105,0.029631255487269532,False
+1000,Who can remove a Debenture Director?,1,aoa_CHUNK_0091,0.03278688524590164,True
+1000,Who can remove a Debenture Director?,2,aoa_CHUNK_0090,0.03200204813108039,False
+1000,Who can remove a Debenture Director?,3,aoa_CHUNK_0092,0.029877369007803793,False
+1000,Who can remove a Debenture Director?,4,aoa_CHUNK_0055,0.028991596638655463,False
+1000,Who can remove a Debenture Director?,5,aoa_CHUNK_0087,0.028309409888357256,False
+1000,When does a director's resignation take effect?,1,aoa_CHUNK_0098,0.03278688524590164,True
+1000,When does a director's resignation take effect?,2,aoa_CHUNK_0091,0.030834914611005692,False
+1000,When does a director's resignation take effect?,3,aoa_CHUNK_0089,0.0304147465437788,False
+1000,When does a director's resignation take effect?,4,aoa_CHUNK_0088,0.029850746268656716,False
+1000,When does a director's resignation take effect?,5,aoa_CHUNK_0090,0.029273504273504274,False
+1000,Can a Board meeting be called on shorter notice?,1,aoa_CHUNK_0106,0.03278688524590164,True
+1000,Can a Board meeting be called on shorter notice?,2,aoa_CHUNK_0072,0.03200204813108039,False
+1000,Can a Board meeting be called on shorter notice?,3,aoa_CHUNK_0070,0.02976190476190476,False
+1000,Can a Board meeting be called on shorter notice?,4,aoa_CHUNK_0068,0.029709507042253523,False
+1000,Can a Board meeting be called on shorter notice?,5,aoa_CHUNK_0105,0.02964426877470356,False
+1000,What is the quorum when interested directors are two-thirds or more?,1,aoa_CHUNK_0107,0.03278688524590164,True
+1000,What is the quorum when interested directors are two-thirds or more?,2,aoa_CHUNK_0086,0.031024531024531024,False
+1000,What is the quorum when interested directors are two-thirds or more?,3,aoa_CHUNK_0099,0.030621785881252923,False
+1000,What is the quorum when interested directors are two-thirds or more?,4,aoa_CHUNK_0104,0.0293236301369863,False
+1000,What is the quorum when interested directors are two-thirds or more?,5,aoa_CHUNK_0074,0.02904040404040404,False
+1000,When must an alternate director vacate office?,1,aoa_CHUNK_0089,0.03278688524590164,True
+1000,When must an alternate director vacate office?,2,aoa_CHUNK_0088,0.03225806451612903,False
+1000,When must an alternate director vacate office?,3,aoa_CHUNK_0091,0.030798389007344232,False
+1000,When must an alternate director vacate office?,4,aoa_CHUNK_0102,0.030309988518943745,False
+1000,When must an alternate director vacate office?,5,aoa_CHUNK_0093,0.030090497737556562,False
+1000,Which powers need a special resolution in general meeting before the Board can use them?,1,aoa_CHUNK_0076,0.03225806451612903,False
+1000,Which powers need a special resolution in general meeting before the Board can use them?,2,aoa_CHUNK_0110,0.03131881575727918,True
+1000,Which powers need a special resolution in general meeting before the Board can use them?,3,aoa_CHUNK_0109,0.031009615384615385,False
+1000,Which powers need a special resolution in general meeting before the Board can use them?,4,aoa_CHUNK_0114,0.029411764705882353,False
+1000,Which powers need a special resolution in general meeting before the Board can use them?,5,aoa_CHUNK_0139,0.029030910609857977,False
+1000,Can continuing directors act despite a vacancy?,1,aoa_CHUNK_0089,0.03252247488101534,False
+1000,Can continuing directors act despite a vacancy?,2,aoa_CHUNK_0097,0.03252247488101534,True
+1000,Can continuing directors act despite a vacancy?,3,aoa_CHUNK_0088,0.03149801587301587,False
+1000,Can continuing directors act despite a vacancy?,4,aoa_CHUNK_0095,0.031009615384615385,False
+1000,Can continuing directors act despite a vacancy?,5,aoa_CHUNK_0098,0.029957522915269395,False
+1000,Under which sections is director remuneration paid?,1,aoa_CHUNK_0096,0.03278688524590164,True
+1000,Under which sections is director remuneration paid?,2,aoa_CHUNK_0101,0.03200204813108039,False
+1000,Under which sections is director remuneration paid?,3,aoa_CHUNK_0097,0.031754032258064516,False
+1000,Under which sections is director remuneration paid?,4,aoa_CHUNK_0095,0.030798389007344232,False
+1000,Under which sections is director remuneration paid?,5,aoa_CHUNK_0119,0.030536130536130537,False
+1000,Can directors be reimbursed travelling and hotel expenses?,1,aoa_CHUNK_0097,0.03278688524590164,True
+1000,Can directors be reimbursed travelling and hotel expenses?,2,aoa_CHUNK_0095,0.031754032258064516,False
+1000,Can directors be reimbursed travelling and hotel expenses?,3,aoa_CHUNK_0134,0.030303030303030304,False
+1000,Can directors be reimbursed travelling and hotel expenses?,4,aoa_CHUNK_0103,0.030158730158730156,False
+1000,Can directors be reimbursed travelling and hotel expenses?,5,aoa_CHUNK_0119,0.027912386121341344,False
+1000,Can a director be paid special remuneration for extra services?,1,aoa_CHUNK_0096,0.03278688524590164,True
+1000,Can a director be paid special remuneration for extra services?,2,aoa_CHUNK_0097,0.03200204813108039,False
+1000,Can a director be paid special remuneration for extra services?,3,aoa_CHUNK_0088,0.030834914611005692,False
+1000,Can a director be paid special remuneration for extra services?,4,aoa_CHUNK_0095,0.03076923076923077,False
+1000,Can a director be paid special remuneration for extra services?,5,aoa_CHUNK_0094,0.030158730158730156,False
+1500,What is the minimum and maximum number of Directors?,1,aoa_CHUNK_0058,0.03177805800756621,True
+1500,What is the minimum and maximum number of Directors?,2,aoa_CHUNK_0071,0.030536130536130537,False
+1500,What is the minimum and maximum number of Directors?,3,aoa_CHUNK_0060,0.03036576949620428,False
+1500,What is the minimum and maximum number of Directors?,4,aoa_CHUNK_0065,0.03021353930031804,False
+1500,What is the minimum and maximum number of Directors?,5,aoa_CHUNK_0067,0.030117753623188408,False
+1500,How many Board Meetings must be held in a calendar year?,1,aoa_CHUNK_0069,0.03278688524590164,True
+1500,How many Board Meetings must be held in a calendar year?,2,aoa_CHUNK_0070,0.031754032258064516,False
+1500,How many Board Meetings must be held in a calendar year?,3,aoa_CHUNK_0049,0.03057889822595705,False
+1500,How many Board Meetings must be held in a calendar year?,4,aoa_CHUNK_0046,0.030536130536130537,False
+1500,How many Board Meetings must be held in a calendar year?,5,aoa_CHUNK_0075,0.03021353930031804,False
+1500,How much notice is required for a Board Meeting?,1,aoa_CHUNK_0048,0.03225806451612903,False
+1500,How much notice is required for a Board Meeting?,2,aoa_CHUNK_0070,0.032018442622950824,True
+1500,How much notice is required for a Board Meeting?,3,aoa_CHUNK_0047,0.031024531024531024,False
+1500,How much notice is required for a Board Meeting?,4,aoa_CHUNK_0075,0.028991596638655463,False
+1500,How much notice is required for a Board Meeting?,5,aoa_CHUNK_0071,0.02886002886002886,False
+1500,Who appoints the Chairperson of the Board?,1,aoa_CHUNK_0059,0.03278688524590164,True
+1500,Who appoints the Chairperson of the Board?,2,aoa_CHUNK_0071,0.030834914611005692,False
+1500,Who appoints the Chairperson of the Board?,3,aoa_CHUNK_0053,0.029957522915269395,False
+1500,Who appoints the Chairperson of the Board?,4,aoa_CHUNK_0072,0.029418126757516764,False
+1500,Who appoints the Chairperson of the Board?,5,aoa_CHUNK_0070,0.02904040404040404,False
+1500,What is the quorum for a Board Meeting?,1,aoa_CHUNK_0071,0.03278688524590164,True
+1500,What is the quorum for a Board Meeting?,2,aoa_CHUNK_0051,0.03225806451612903,False
+1500,What is the quorum for a Board Meeting?,3,aoa_CHUNK_0052,0.030303030303030304,False
+1500,What is the quorum for a Board Meeting?,4,aoa_CHUNK_0070,0.029513888888888888,False
+1500,What is the quorum for a Board Meeting?,5,aoa_CHUNK_0075,0.029211087420042643,False
+1500,Can the Managing Director also be the Chairperson?,1,aoa_CHUNK_0059,0.03278688524590164,True
+1500,Can the Managing Director also be the Chairperson?,2,aoa_CHUNK_0052,0.03225806451612903,False
+1500,Can the Managing Director also be the Chairperson?,3,aoa_CHUNK_0068,0.03149801587301587,False
+1500,Can the Managing Director also be the Chairperson?,4,aoa_CHUNK_0067,0.031009615384615385,False
+1500,Can the Managing Director also be the Chairperson?,5,aoa_CHUNK_0073,0.030090497737556562,False
+1500,Does the Chairperson have a casting vote if there is a tie?,1,aoa_CHUNK_0053,0.032266458495966696,False
+1500,Does the Chairperson have a casting vote if there is a tie?,2,aoa_CHUNK_0059,0.032266458495966696,True
+1500,Does the Chairperson have a casting vote if there is a tie?,3,aoa_CHUNK_0054,0.031754032258064516,False
+1500,Does the Chairperson have a casting vote if there is a tie?,4,aoa_CHUNK_0071,0.031054405392392875,False
+1500,Does the Chairperson have a casting vote if there is a tie?,5,aoa_CHUNK_0052,0.030776515151515152,False
+1500,When can an alternate director be nominated for an absent director?,1,aoa_CHUNK_0060,0.03252247488101534,False
+1500,When can an alternate director be nominated for an absent director?,2,aoa_CHUNK_0059,0.03252247488101534,True
+1500,When can an alternate director be nominated for an absent director?,3,aoa_CHUNK_0070,0.030330882352941176,False
+1500,When can an alternate director be nominated for an absent director?,4,aoa_CHUNK_0061,0.030309988518943745,False
+1500,When can an alternate director be nominated for an absent director?,5,aoa_CHUNK_0067,0.03007688828584351,False
+1500,How many woman directors must the Board have?,1,aoa_CHUNK_0058,0.03252247488101534,True
+1500,How many woman directors must the Board have?,2,aoa_CHUNK_0071,0.03125763125763126,False
+1500,How many woman directors must the Board have?,3,aoa_CHUNK_0059,0.031054405392392875,False
+1500,How many woman directors must the Board have?,4,aoa_CHUNK_0078,0.030776515151515152,False
+1500,How many woman directors must the Board have?,5,aoa_CHUNK_0069,0.029411764705882353,False
+1500,Can the Company appoint more than 15 directors?,1,aoa_CHUNK_0059,0.03252247488101534,False
+1500,Can the Company appoint more than 15 directors?,2,aoa_CHUNK_0058,0.03252247488101534,True
+1500,Can the Company appoint more than 15 directors?,3,aoa_CHUNK_0063,0.031746031746031744,False
+1500,Can the Company appoint more than 15 directors?,4,aoa_CHUNK_0078,0.029709507042253523,False
+1500,Can the Company appoint more than 15 directors?,5,aoa_CHUNK_0067,0.029631255487269532,False
+1500,Do directors have to hold qualification shares?,1,aoa_CHUNK_0064,0.03252247488101534,True
+1500,Do directors have to hold qualification shares?,2,aoa_CHUNK_0063,0.0315136476426799,False
+1500,Do directors have to hold qualification shares?,3,aoa_CHUNK_0061,0.03149801587301587,False
+1500,Do directors have to hold qualification shares?,4,aoa_CHUNK_0062,0.03055037313432836,False
+1500,Do directors have to hold qualification shares?,5,aoa_CHUNK_0060,0.027583600982429624,False
+1500,What fraction of directors retire by rotation at each AGM?,1,aoa_CHUNK_0066,0.03278688524590164,True
+1500,What fraction of directors retire by rotation at each AGM?,2,aoa_CHUNK_0067,0.03200204813108039,False
+1500,What fraction of directors retire by rotation at each AGM?,3,aoa_CHUNK_0058,0.03036576949620428,False
+1500,What fraction of directors retire by rotation at each AGM?,4,aoa_CHUNK_0068,0.030330882352941176,False
+1500,What fraction of directors retire by rotation at each AGM?,5,aoa_CHUNK_0063,0.030090497737556562,False
+1500,How many votes does each director have at a Board Meeting?,1,aoa_CHUNK_0071,0.03278688524590164,True
+1500,How many votes does each director have at a Board Meeting?,2,aoa_CHUNK_0070,0.03225806451612903,True
+1500,How many votes does each director have at a Board Meeting?,3,aoa_CHUNK_0058,0.03125,False
+1500,How many votes does each director have at a Board Meeting?,4,aoa_CHUNK_0059,0.029877369007803793,False
+1500,How many votes does each director have at a Board Meeting?,5,aoa_CHUNK_0053,0.02976190476190476,False
+1500,What vote is needed to adopt a Board resolution?,1,aoa_CHUNK_0071,0.03252247488101534,True
+1500,What vote is needed to adopt a Board resolution?,2,aoa_CHUNK_0075,0.03200204813108039,False
+1500,What vote is needed to adopt a Board resolution?,3,aoa_CHUNK_0072,0.031009615384615385,False
+1500,What vote is needed to adopt a Board resolution?,4,aoa_CHUNK_0054,0.029857397504456328,False
+1500,What vote is needed to adopt a Board resolution?,5,aoa_CHUNK_0052,0.029850746268656716,False
+1500,What happens if a Board meeting lacks a quorum?,1,aoa_CHUNK_0071,0.03252247488101534,True
+1500,What happens if a Board meeting lacks a quorum?,2,aoa_CHUNK_0051,0.032266458495966696,False
+1500,What happens if a Board meeting lacks a quorum?,3,aoa_CHUNK_0052,0.03149801587301587,False
+1500,What happens if a Board meeting lacks a quorum?,4,aoa_CHUNK_0072,0.030536130536130537,False
+1500,What happens if a Board meeting lacks a quorum?,5,aoa_CHUNK_0059,0.029418126757516764,False
+1500,Who can remove a Debenture Director?,1,aoa_CHUNK_0061,0.032266458495966696,True
+1500,Who can remove a Debenture Director?,2,aoa_CHUNK_0059,0.032018442622950824,False
+1500,Who can remove a Debenture Director?,3,aoa_CHUNK_0062,0.031054405392392875,False
+1500,Who can remove a Debenture Director?,4,aoa_CHUNK_0039,0.029437229437229435,False
+1500,Who can remove a Debenture Director?,5,aoa_CHUNK_0042,0.029206349206349208,False
+1500,When does a director's resignation take effect?,1,aoa_CHUNK_0066,0.03278688524590164,True
+1500,When does a director's resignation take effect?,2,aoa_CHUNK_0059,0.030798389007344232,False
+1500,When does a director's resignation take effect?,3,aoa_CHUNK_0061,0.030621785881252923,False
+1500,When does a director's resignation take effect?,4,aoa_CHUNK_0060,0.0304147465437788,False
+1500,When does a director's resignation take effect?,5,aoa_CHUNK_0068,0.030303030303030304,False
+1500,Can a Board meeting be called on shorter notice?,1,aoa_CHUNK_0070,0.03278688524590164,True
+1500,Can a Board meeting be called on shorter notice?,2,aoa_CHUNK_0050,0.03200204813108039,False
+1500,Can a Board meeting be called on shorter notice?,3,aoa_CHUNK_0069,0.03125763125763126,False
+1500,Can a Board meeting be called on shorter notice?,4,aoa_CHUNK_0047,0.030621785881252923,False
+1500,Can a Board meeting be called on shorter notice?,5,aoa_CHUNK_0049,0.029857397504456328,False
+1500,What is the quorum when interested directors are two-thirds or more?,1,aoa_CHUNK_0071,0.03278688524590164,True
+1500,What is the quorum when interested directors are two-thirds or more?,2,aoa_CHUNK_0051,0.031754032258064516,False
+1500,What is the quorum when interested directors are two-thirds or more?,3,aoa_CHUNK_0058,0.031024531024531024,False
+1500,What is the quorum when interested directors are two-thirds or more?,4,aoa_CHUNK_0069,0.030309988518943745,False
+1500,What is the quorum when interested directors are two-thirds or more?,5,aoa_CHUNK_0066,0.02878726010616578,False
+1500,When must an alternate director vacate office?,1,aoa_CHUNK_0060,0.03278688524590164,True
+1500,When must an alternate director vacate office?,2,aoa_CHUNK_0059,0.03225806451612903,False
+1500,When must an alternate director vacate office?,3,aoa_CHUNK_0061,0.031009615384615385,False
+1500,When must an alternate director vacate office?,4,aoa_CHUNK_0062,0.030090497737556562,False
+1500,When must an alternate director vacate office?,5,aoa_CHUNK_0067,0.029910714285714284,False
+1500,Which powers need a special resolution in general meeting before the Board can use them?,1,aoa_CHUNK_0072,0.032266458495966696,True
+1500,Which powers need a special resolution in general meeting before the Board can use them?,2,aoa_CHUNK_0069,0.03200204813108039,False
+1500,Which powers need a special resolution in general meeting before the Board can use them?,3,aoa_CHUNK_0052,0.03128054740957967,False
+1500,Which powers need a special resolution in general meeting before the Board can use them?,4,aoa_CHUNK_0075,0.030117753623188408,False
+1500,Which powers need a special resolution in general meeting before the Board can use them?,5,aoa_CHUNK_0040,0.02967032967032967,False
+1500,Can continuing directors act despite a vacancy?,1,aoa_CHUNK_0060,0.03252247488101534,False
+1500,Can continuing directors act despite a vacancy?,2,aoa_CHUNK_0065,0.03252247488101534,True
+1500,Can continuing directors act despite a vacancy?,3,aoa_CHUNK_0059,0.031746031746031744,False
+1500,Can continuing directors act despite a vacancy?,4,aoa_CHUNK_0063,0.031009615384615385,False
+1500,Can continuing directors act despite a vacancy?,5,aoa_CHUNK_0052,0.029437229437229435,False
+1500,Under which sections is director remuneration paid?,1,aoa_CHUNK_0064,0.03278688524590164,True
+1500,Under which sections is director remuneration paid?,2,aoa_CHUNK_0065,0.03225806451612903,False
+1500,Under which sections is director remuneration paid?,3,aoa_CHUNK_0067,0.031746031746031744,False
+1500,Under which sections is director remuneration paid?,4,aoa_CHUNK_0078,0.030117753623188408,False
+1500,Under which sections is director remuneration paid?,5,aoa_CHUNK_0058,0.028438886647841874,False
+1500,Can directors be reimbursed travelling and hotel expenses?,1,aoa_CHUNK_0065,0.03278688524590164,True
+1500,Can directors be reimbursed travelling and hotel expenses?,2,aoa_CHUNK_0064,0.03225806451612903,False
+1500,Can directors be reimbursed travelling and hotel expenses?,3,aoa_CHUNK_0089,0.03125763125763126,False
+1500,Can directors be reimbursed travelling and hotel expenses?,4,aoa_CHUNK_0059,0.030776515151515152,False
+1500,Can directors be reimbursed travelling and hotel expenses?,5,aoa_CHUNK_0061,0.029138513513513514,False
+1500,Can a director be paid special remuneration for extra services?,1,aoa_CHUNK_0064,0.03278688524590164,True
+1500,Can a director be paid special remuneration for extra services?,2,aoa_CHUNK_0065,0.03225806451612903,False
+1500,Can a director be paid special remuneration for extra services?,3,aoa_CHUNK_0063,0.03125763125763126,False
+1500,Can a director be paid special remuneration for extra services?,4,aoa_CHUNK_0059,0.03125763125763126,False
+1500,Can a director be paid special remuneration for extra services?,5,aoa_CHUNK_0078,0.03007688828584351,False
+2000,What is the minimum and maximum number of Directors?,1,aoa_CHUNK_0043,0.031754032258064516,False
+2000,What is the minimum and maximum number of Directors?,2,aoa_CHUNK_0042,0.031099324975891997,False
+2000,What is the minimum and maximum number of Directors?,3,aoa_CHUNK_0051,0.030303030303030304,False
+2000,What is the minimum and maximum number of Directors?,4,aoa_CHUNK_0047,0.030090497737556562,False
+2000,What is the minimum and maximum number of Directors?,5,aoa_CHUNK_0056,0.029827662395050816,False
+2000,How many Board Meetings must be held in a calendar year?,1,aoa_CHUNK_0050,0.031544957774465976,False
+2000,How many Board Meetings must be held in a calendar year?,2,aoa_CHUNK_0033,0.0315136476426799,False
+2000,How many Board Meetings must be held in a calendar year?,3,aoa_CHUNK_0049,0.030886196246139225,True
+2000,How many Board Meetings must be held in a calendar year?,4,aoa_CHUNK_0035,0.03057889822595705,False
+2000,How many Board Meetings must be held in a calendar year?,5,aoa_CHUNK_0054,0.029910714285714284,False
+2000,How much notice is required for a Board Meeting?,1,aoa_CHUNK_0050,0.03252247488101534,True
+2000,How much notice is required for a Board Meeting?,2,aoa_CHUNK_0034,0.031746031746031744,False
+2000,How much notice is required for a Board Meeting?,3,aoa_CHUNK_0035,0.030621785881252923,False
+2000,How much notice is required for a Board Meeting?,4,aoa_CHUNK_0036,0.030330882352941176,False
+2000,How much notice is required for a Board Meeting?,5,aoa_CHUNK_0051,0.030303030303030304,False
+2000,Who appoints the Chairperson of the Board?,1,aoa_CHUNK_0042,0.03252247488101534,True
+2000,Who appoints the Chairperson of the Board?,2,aoa_CHUNK_0039,0.031746031746031744,False
+2000,Who appoints the Chairperson of the Board?,3,aoa_CHUNK_0037,0.030776515151515152,False
+2000,Who appoints the Chairperson of the Board?,4,aoa_CHUNK_0051,0.030017921146953404,False
+2000,Who appoints the Chairperson of the Board?,5,aoa_CHUNK_0050,0.029418126757516764,False
+2000,What is the quorum for a Board Meeting?,1,aoa_CHUNK_0050,0.03252247488101534,True
+2000,What is the quorum for a Board Meeting?,2,aoa_CHUNK_0036,0.032266458495966696,False
+2000,What is the quorum for a Board Meeting?,3,aoa_CHUNK_0051,0.031754032258064516,False
+2000,What is the quorum for a Board Meeting?,4,aoa_CHUNK_0037,0.03076923076923077,False
+2000,What is the quorum for a Board Meeting?,5,aoa_CHUNK_0033,0.02964426877470356,False
+2000,Can the Managing Director also be the Chairperson?,1,aoa_CHUNK_0042,0.03252247488101534,True
+2000,Can the Managing Director also be the Chairperson?,2,aoa_CHUNK_0037,0.032266458495966696,False
+2000,Can the Managing Director also be the Chairperson?,3,aoa_CHUNK_0048,0.03125763125763126,False
+2000,Can the Managing Director also be the Chairperson?,4,aoa_CHUNK_0049,0.031009615384615385,False
+2000,Can the Managing Director also be the Chairperson?,5,aoa_CHUNK_0050,0.030621785881252923,False
+2000,Does the Chairperson have a casting vote if there is a tie?,1,aoa_CHUNK_0037,0.03252247488101534,False
+2000,Does the Chairperson have a casting vote if there is a tie?,2,aoa_CHUNK_0039,0.032018442622950824,False
+2000,Does the Chairperson have a casting vote if there is a tie?,3,aoa_CHUNK_0051,0.031746031746031744,False
+2000,Does the Chairperson have a casting vote if there is a tie?,4,aoa_CHUNK_0042,0.031054405392392875,True
+2000,Does the Chairperson have a casting vote if there is a tie?,5,aoa_CHUNK_0038,0.031009615384615385,False
+2000,When can an alternate director be nominated for an absent director?,1,aoa_CHUNK_0042,0.03278688524590164,True
+2000,When can an alternate director be nominated for an absent director?,2,aoa_CHUNK_0045,0.03200204813108039,False
+2000,When can an alternate director be nominated for an absent director?,3,aoa_CHUNK_0043,0.03149801587301587,False
+2000,When can an alternate director be nominated for an absent director?,4,aoa_CHUNK_0048,0.030536130536130537,False
+2000,When can an alternate director be nominated for an absent director?,5,aoa_CHUNK_0047,0.029827662395050816,False
+2000,How many woman directors must the Board have?,1,aoa_CHUNK_0042,0.03131881575727918,False
+2000,How many woman directors must the Board have?,2,aoa_CHUNK_0056,0.03128054740957967,False
+2000,How many woman directors must the Board have?,3,aoa_CHUNK_0041,0.031099324975891997,True
+2000,How many woman directors must the Board have?,4,aoa_CHUNK_0051,0.030536130536130537,False
+2000,How many woman directors must the Board have?,5,aoa_CHUNK_0043,0.030330882352941176,False
+2000,Can the Company appoint more than 15 directors?,1,aoa_CHUNK_0042,0.03252247488101534,False
+2000,Can the Company appoint more than 15 directors?,2,aoa_CHUNK_0045,0.031746031746031744,False
+2000,Can the Company appoint more than 15 directors?,3,aoa_CHUNK_0041,0.030679156908665108,True
+2000,Can the Company appoint more than 15 directors?,4,aoa_CHUNK_0048,0.029850746268656716,False
+2000,Can the Company appoint more than 15 directors?,5,aoa_CHUNK_0043,0.029827662395050816,False
+2000,Do directors have to hold qualification shares?,1,aoa_CHUNK_0045,0.03278688524590164,True
+2000,Do directors have to hold qualification shares?,2,aoa_CHUNK_0043,0.0315136476426799,False
+2000,Do directors have to hold qualification shares?,3,aoa_CHUNK_0044,0.030117753623188408,False
+2000,Do directors have to hold qualification shares?,4,aoa_CHUNK_0017,0.028814262023217248,False
+2000,Do directors have to hold qualification shares?,5,aoa_CHUNK_0031,0.028782894736842105,False
+2000,What fraction of directors retire by rotation at each AGM?,1,aoa_CHUNK_0048,0.03252247488101534,False
+2000,What fraction of directors retire by rotation at each AGM?,2,aoa_CHUNK_0047,0.03252247488101534,True
+2000,What fraction of directors retire by rotation at each AGM?,3,aoa_CHUNK_0045,0.031009615384615385,False
+2000,What fraction of directors retire by rotation at each AGM?,4,aoa_CHUNK_0043,0.030330882352941176,False
+2000,What fraction of directors retire by rotation at each AGM?,5,aoa_CHUNK_0041,0.029877369007803793,False
+2000,How many votes does each director have at a Board Meeting?,1,aoa_CHUNK_0050,0.03252247488101534,True
+2000,How many votes does each director have at a Board Meeting?,2,aoa_CHUNK_0037,0.032266458495966696,False
+2000,How many votes does each director have at a Board Meeting?,3,aoa_CHUNK_0051,0.03200204813108039,False
+2000,How many votes does each director have at a Board Meeting?,4,aoa_CHUNK_0039,0.030309988518943745,False
+2000,How many votes does each director have at a Board Meeting?,5,aoa_CHUNK_0041,0.03007688828584351,False
+2000,What vote is needed to adopt a Board resolution?,1,aoa_CHUNK_0039,0.03200204813108039,False
+2000,What vote is needed to adopt a Board resolution?,2,aoa_CHUNK_0037,0.0315136476426799,False
+2000,What vote is needed to adopt a Board resolution?,3,aoa_CHUNK_0051,0.03149801587301587,False
+2000,What vote is needed to adopt a Board resolution?,4,aoa_CHUNK_0054,0.03131881575727918,False
+2000,What vote is needed to adopt a Board resolution?,5,aoa_CHUNK_0050,0.030536130536130537,True
+2000,What happens if a Board meeting lacks a quorum?,1,aoa_CHUNK_0051,0.032018442622950824,True
+2000,What happens if a Board meeting lacks a quorum?,2,aoa_CHUNK_0036,0.032018442622950824,False
+2000,What happens if a Board meeting lacks a quorum?,3,aoa_CHUNK_0050,0.03200204813108039,False
+2000,What happens if a Board meeting lacks a quorum?,4,aoa_CHUNK_0037,0.03125763125763126,False
+2000,What happens if a Board meeting lacks a quorum?,5,aoa_CHUNK_0053,0.030536130536130537,False
+2000,Who can remove a Debenture Director?,1,aoa_CHUNK_0043,0.032266458495966696,True
+2000,Who can remove a Debenture Director?,2,aoa_CHUNK_0042,0.03131881575727918,False
+2000,Who can remove a Debenture Director?,3,aoa_CHUNK_0044,0.030330882352941176,False
+2000,Who can remove a Debenture Director?,4,aoa_CHUNK_0028,0.029957522915269395,False
+2000,Who can remove a Debenture Director?,5,aoa_CHUNK_0008,0.02964426877470356,False
+2000,When does a director's resignation take effect?,1,aoa_CHUNK_0047,0.03278688524590164,True
+2000,When does a director's resignation take effect?,2,aoa_CHUNK_0042,0.031024531024531024,False
+2000,When does a director's resignation take effect?,3,aoa_CHUNK_0043,0.03076923076923077,False
+2000,When does a director's resignation take effect?,4,aoa_CHUNK_0037,0.03021353930031804,False
+2000,When does a director's resignation take effect?,5,aoa_CHUNK_0056,0.029850746268656716,False
+2000,Can a Board meeting be called on shorter notice?,1,aoa_CHUNK_0050,0.03278688524590164,True
+2000,Can a Board meeting be called on shorter notice?,2,aoa_CHUNK_0035,0.03225806451612903,False
+2000,Can a Board meeting be called on shorter notice?,3,aoa_CHUNK_0036,0.031746031746031744,False
+2000,Can a Board meeting be called on shorter notice?,4,aoa_CHUNK_0034,0.03125,False
+2000,Can a Board meeting be called on shorter notice?,5,aoa_CHUNK_0037,0.030536130536130537,False
+2000,What is the quorum when interested directors are two-thirds or more?,1,aoa_CHUNK_0051,0.03278688524590164,True
+2000,What is the quorum when interested directors are two-thirds or more?,2,aoa_CHUNK_0050,0.03225806451612903,False
+2000,What is the quorum when interested directors are two-thirds or more?,3,aoa_CHUNK_0036,0.030776515151515152,False
+2000,What is the quorum when interested directors are two-thirds or more?,4,aoa_CHUNK_0056,0.029631255487269532,False
+2000,What is the quorum when interested directors are two-thirds or more?,5,aoa_CHUNK_0037,0.029571646010002173,False
+2000,When must an alternate director vacate office?,1,aoa_CHUNK_0042,0.03252247488101534,True
+2000,When must an alternate director vacate office?,2,aoa_CHUNK_0043,0.03200204813108039,False
+2000,When must an alternate director vacate office?,3,aoa_CHUNK_0047,0.030886196246139225,False
+2000,When must an alternate director vacate office?,4,aoa_CHUNK_0048,0.03055037313432836,False
+2000,When must an alternate director vacate office?,5,aoa_CHUNK_0044,0.030117753623188408,False
+2000,Which powers need a special resolution in general meeting before the Board can use them?,1,aoa_CHUNK_0037,0.03131881575727918,False
+2000,Which powers need a special resolution in general meeting before the Board can use them?,2,aoa_CHUNK_0052,0.03057889822595705,True
+2000,Which powers need a special resolution in general meeting before the Board can use them?,3,aoa_CHUNK_0039,0.030330882352941176,False
+2000,Which powers need a special resolution in general meeting before the Board can use them?,4,aoa_CHUNK_0041,0.03007688828584351,False
+2000,Which powers need a special resolution in general meeting before the Board can use them?,5,aoa_CHUNK_0051,0.029877369007803793,False
+2000,Can continuing directors act despite a vacancy?,1,aoa_CHUNK_0043,0.03252247488101534,False
+2000,Can continuing directors act despite a vacancy?,2,aoa_CHUNK_0042,0.031746031746031744,False
+2000,Can continuing directors act despite a vacancy?,3,aoa_CHUNK_0046,0.031099324975891997,True
+2000,Can continuing directors act despite a vacancy?,4,aoa_CHUNK_0045,0.031009615384615385,False
+2000,Can continuing directors act despite a vacancy?,5,aoa_CHUNK_0047,0.030834914611005692,False
+2000,Under which sections is director remuneration paid?,1,aoa_CHUNK_0046,0.03278688524590164,True
+2000,Under which sections is director remuneration paid?,2,aoa_CHUNK_0042,0.03200204813108039,False
+2000,Under which sections is director remuneration paid?,3,aoa_CHUNK_0045,0.0315136476426799,False
+2000,Under which sections is director remuneration paid?,4,aoa_CHUNK_0048,0.031009615384615385,False
+2000,Under which sections is director remuneration paid?,5,aoa_CHUNK_0056,0.030798389007344232,False
+2000,Can directors be reimbursed travelling and hotel expenses?,1,aoa_CHUNK_0046,0.03278688524590164,True
+2000,Can directors be reimbursed travelling and hotel expenses?,2,aoa_CHUNK_0045,0.03200204813108039,False
+2000,Can directors be reimbursed travelling and hotel expenses?,3,aoa_CHUNK_0049,0.03149801587301587,False
+2000,Can directors be reimbursed travelling and hotel expenses?,4,aoa_CHUNK_0042,0.030536130536130537,False
+2000,Can directors be reimbursed travelling and hotel expenses?,5,aoa_CHUNK_0047,0.029827662395050816,False
+2000,Can a director be paid special remuneration for extra services?,1,aoa_CHUNK_0046,0.03278688524590164,True
+2000,Can a director be paid special remuneration for extra services?,2,aoa_CHUNK_0045,0.03225806451612903,False
+2000,Can a director be paid special remuneration for extra services?,3,aoa_CHUNK_0042,0.03125763125763126,False
+2000,Can a director be paid special remuneration for extra services?,4,aoa_CHUNK_0049,0.030330882352941176,False
+2000,Can a director be paid special remuneration for extra services?,5,aoa_CHUNK_0056,0.030309988518943745,False

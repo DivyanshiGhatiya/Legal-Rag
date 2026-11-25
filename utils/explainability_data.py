@@ -4,6 +4,7 @@ import re
 from typing import Any, Dict, List, Optional
 
 from explainability import compute_claim_attribution
+from utils.generation import requires_full_document_review
 
 
 _CITATION_PATTERN = re.compile(r"\[([^\[\]\n]+)\]")
@@ -86,6 +87,10 @@ def build_explainability_data(
         str(chunk_id)
         for chunk_id in (citation_report or {}).get("citations", [])
     }
+    full_document_review_claims = {
+        re.sub(r"\s+", " ", claim).strip().casefold()
+        for claim in (citation_report or {}).get("full_document_review_claims", [])
+    }
 
     claim_reports: List[Dict[str, Any]] = []
     for claim, attribution in zip(claims, attributions):
@@ -105,7 +110,14 @@ def build_explainability_data(
             elif resolved_id is None and citation not in unresolved_citations:
                 unresolved_citations.append(citation)
 
-        if not retrieved_chunks:
+        claim_needs_full_document_review = (
+            requires_full_document_review(claim)
+            or re.sub(r"\s+", " ", claim).strip().casefold()
+            in full_document_review_claims
+        )
+        if claim_needs_full_document_review:
+            verification_status = "full_document_review_required"
+        elif not retrieved_chunks:
             verification_status = "insufficient_evidence"
         elif citation_report is None:
             verification_status = "unavailable"
